@@ -12,14 +12,14 @@ def command_parser():
     sub_create.add_argument("--name", choices=DATASETS, dest="dataset_name", required=True)
     sub_create.set_defaults(command='create')
 
-    # sub_train = sub.add_parser('train', help="Train.")
+    sub_train = sub.add_parser('train', help="Train.")
     # sub_train.add_argument("--exp-name", default="Experiment", help="Experiment name.")
     # sub_train.add_argument("--dataset-name", default="drd2", help="Dataset name.")
     # sub_train.add_argument("--hparams-file", default="hparams.yml", help="HParams file.")
     # sub_train.add_argument("--root-dir", default="RESULTS", help="Output folder.")
     # sub_train.add_argument("--gpu", default=0, help="GPU number.", type=int)
     # sub_train.add_argument("--debug", default=False, action="store_true", help="Debug mode.")
-    # sub_train.set_defaults(command='train')
+    sub_train.set_defaults(command='train')
 
     # sub_validate = sub.add_parser('validate', help="Validation.")
     # sub_validate.add_argument("--exp-path", help="Experiment path.")
