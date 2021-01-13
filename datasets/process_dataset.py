@@ -155,7 +155,7 @@ def produce_graphs_from_graphrnn_format(
                     G_sub.nodes[node]['label'] = str(
                         G_sub.nodes[node]['label'])
 
-                nx.set_edge_attributes(G_sub, 'DEFAULT_LABEL', 'label')
+                nx.set_edge_attributes(G_sub, 'E', 'label')
 
                 with open(output_path + 'graph' + str(count) + '.dat', 'wb') as f:
                     pickle.dump(G_sub, f)
@@ -199,7 +199,7 @@ def produce_random_walk_sampled_graphs(
         for line in f.readlines():
             spp = line.strip().split('\t')
             if spp[0] in d and spp[1] in d:
-                G.add_edge(d[spp[0]], d[spp[1]], label='DEFAULT_LABEL')
+                G.add_edge(d[spp[0]], d[spp[1]], label='E')
             else:
                 count += 1
 

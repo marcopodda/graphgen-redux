@@ -74,7 +74,7 @@ def _process_citation_dataset(root_dir, name, num_factor=5, iterations=150):
         for line in f.readlines():
             spp = line.rstrip("\n").split('\t')
             if spp[0] in d and spp[1] in d:
-                G.add_edge(d[spp[0]], d[spp[1]], label='DEFAULT_LABEL')
+                G.add_edge(d[spp[0]], d[spp[1]], label='E')
             else:
                 count += 1
 
@@ -126,7 +126,7 @@ def _process_tud_dataset(root_dir, name, min_num_nodes=20, max_num_nodes=100):
                 for node in G_sub.nodes():
                     G_sub.nodes[node]['label'] = str(G_sub.nodes[node]['label'])
 
-                nx.set_edge_attributes(G_sub, 'DEFAULT_LABEL', 'label')
+                nx.set_edge_attributes(G_sub, 'E', 'label')
                 graphs.append(G_sub)
                 count += 1
 

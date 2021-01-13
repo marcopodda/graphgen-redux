@@ -16,7 +16,7 @@ LINE_BREAK = '------------------------------------------------------------------
 
 def patch_graph(graph):
     # for u, v in graph.edges():
-    #     graph.edges[u, v]['label'] = 'DEFAULT_LABEL'
+    #     graph.edges[u, v]['label'] = 'E'
 
     # for u in graph.nodes():
     #     graph.nodes[u]['label'] = graph.nodes[u]['label'].split('-')[0]
@@ -32,7 +32,7 @@ def generate_graphs(eval_args):
     """
 
     train_args = eval_args.train_args
-    
+
     if train_args.note == 'DFScodeRNN':
         gen_graphs = gen_graphs_dfscode_rnn(eval_args)
 
