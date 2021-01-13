@@ -153,11 +153,6 @@ def process_tud_dataset(name, min_num_nodes=20, max_num_nodes=100):
 
 def create_dataset(dataset_name):
     np.random.seed(123)
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--name", choices=DATASETS, dest="dataset_name", required=True)
-    args = parser.parse_args()
-    dataset_name = args.dataset_name
-
     if dataset_name in ["All", "Breast", "Leukemia", "Lung", "Yeast"]:
         process_molecule_dataset(dataset_name)
     elif dataset_name in ["cora", "citeseer"]:
