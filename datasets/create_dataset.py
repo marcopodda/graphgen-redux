@@ -4,9 +4,8 @@ import networkx as nx
 from joblib import Parallel, delayed
 
 from core.serialization import save_pickle
-from core.utils import get_n_jobs, get_or_create_dir, flatten
+from core.utils import get_n_jobs, flatten
 from datasets.utils import sample_subgraphs
-
 
 
 DATA_DIR = Path("DATA")
@@ -71,7 +70,6 @@ def process_molecule_dataset(name):
 
 def process_citation_dataset(name, num_factor=5, iterations=150):
     root_dir = DATA_DIR / name
-    output_dir = get_or_create_dir(root_dir / "graphs")
     content_file = root_dir / f"{name}.content"
     cites_file = root_dir / f"{name}.cites"
 
