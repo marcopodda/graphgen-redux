@@ -6,21 +6,7 @@ from joblib import Parallel, delayed
 from core.serialization import save_pickle, load_pickle
 from core.utils import get_n_jobs, flatten
 from datasets.utils import sample_subgraphs, mapping
-
-
-DATA_DIR = Path("DATA")
-
-
-DATASETS = [
-    "All",
-    "Breast",
-    "citeseer",
-    "cora",
-    "ENZYMES",
-    "Leukemia",
-    "Lung",
-    "Yeast"
-]
+from core.settings import DATA_DIR
 
 
 def _process_molecule_dataset(root_dir, name):

@@ -59,13 +59,3 @@ def graph_from_dfscode(dfscode):
         graph.add_edge(int(i), int(j), label=e)
 
     return graph
-
-
-if __name__ == '__main__':
-    with open(os.path.expanduser('~/MTP/data/dataset/ENZYMES/graphs/graph180.dat'), 'rb') as f:
-        G = pickle.load(f)
-
-    dfs_code = get_min_dfscode(G)
-    print(len(dfs_code), G.number_of_edges())
-    for code in dfs_code:
-        print(code)

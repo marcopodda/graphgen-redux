@@ -97,3 +97,27 @@ def mapping(graphs):
     print('Successfully done edge count', edge_count)
 
     return feature_map
+
+def graph_from_dfscode(dfscode):
+    graph = nx.Graph()
+
+    for dfscode_egde in dfscode:
+        i, j, l1, e, l2 = dfscode_egde
+        graph.add_node(int(i), label=l1)
+        graph.add_node(int(j), label=l2)
+        graph.add_edge(int(i), int(j), label=e)
+
+    return graph
+
+
+def graph_from_reduced_dfscode(reduced_dfscode):
+    graph = nx.Graph()
+
+    for reduced_dfscode_egde in reduced_dfscode:
+        i, j, token = reduced_dfscode_egde
+        l1, e, l2 = token
+        graph.add_node(int(i), label=l1)
+        graph.add_node(int(j), label=l2)
+        graph.add_edge(int(i), int(j), label=e)
+
+    return graph

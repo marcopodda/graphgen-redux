@@ -1,7 +1,9 @@
 import argparse
 from pathlib import Path
 
-from datasets.create_dataset import create_dataset, DATASETS
+from core.settings import DATASETS
+from datasets.create_dataset import create_dataset
+from datasets.preprocess_dataset import preprocess_dataset
 
 
 def command_parser():
@@ -11,6 +13,10 @@ def command_parser():
     sub_create = sub.add_parser('create', help="Create a given dataset.")
     sub_create.add_argument("--dataset-name", choices=DATASETS, default="cora")
     sub_create.set_defaults(command='create')
+
+    sub_dfscode = sub.add_parser('dfscode', help="Create DFS codes.")
+    sub_dfscode.add_argument("--dataset-name", choices=DATASETS, default="cora")
+    sub_dfscode.set_defaults(command='dfscode')
 
     sub_train = sub.add_parser('train', help="Train.")
     # sub_train.add_argument("--exp-name", default="Experiment", help="Experiment name.")
@@ -48,6 +54,9 @@ if __name__ == "__main__":
 
     if args.command == "create":
         create_dataset(args.dataset_name)
+
+    if args.command == "dfscode":
+        preprocess_dataset(args.dataset_name)
 
     # elif args.command == "train":
     #     translator = Translator.from_args(args)
