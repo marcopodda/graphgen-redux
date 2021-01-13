@@ -1,11 +1,12 @@
 from pathlib import Path
-import argparse
 import numpy as np
 import networkx as nx
 from joblib import Parallel, delayed
-from tqdm.auto import tqdm
+
+from core.serialization import save_pickle
 from core.utils import get_n_jobs, get_or_create_dir, flatten
 from datasets.utils import sample_subgraphs
+
 
 
 DATA_DIR = Path("DATA")
@@ -154,10 +155,12 @@ def process_tud_dataset(name, min_num_nodes=20, max_num_nodes=100):
 def create_dataset(dataset_name):
     np.random.seed(123)
     if dataset_name in ["All", "Breast", "Leukemia", "Lung", "Yeast"]:
-        process_molecule_dataset(dataset_name)
+        graphs = process_molecule_dataset(dataset_name)
     elif dataset_name in ["cora", "citeseer"]:
-        process_citation_dataset(dataset_name)
+        graphs = process_citation_dataset(dataset_name)
     elif dataset_name in ["ENZYMES"]:
-        process_tud_dataset(dataset_name)
+        graphs = process_tud_dataset(dataset_name)
     else:
         raise Exception("Unknown dataset name!")
+
+    save_pickle(graphs, DATA_DIR / dataset_name / "graphs.pkl")
