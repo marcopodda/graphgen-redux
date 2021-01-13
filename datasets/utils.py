@@ -46,3 +46,54 @@ def sample_subgraphs(node_idx, G, iterations, num_factor):
             graphs.append(G_rw)
 
     return graphs
+
+
+def mapping(graphs):
+    """
+    :param path: path to folder which contains pickled networkx graphs
+    :param dest: place where final dictionary pickle file is stored
+    :return: dictionary of 4 dictionary which contains forward
+    and backwards mappings of vertices and labels, max_nodes and max_edges
+    """
+
+    node_forward, node_backward = {}, {}
+    edge_forward, edge_backward = {}, {}
+    node_count, edge_count = 0, 0
+    max_nodes, max_edges, max_degree = 0, 0, 0
+    min_nodes, min_edges = float('inf'), float('inf')
+
+    for G in graphs:
+        max_nodes = max(max_nodes, len(G.nodes()))
+        min_nodes = min(min_nodes, len(G.nodes()))
+        for _, data in G.nodes.data():
+            if data['label'] not in node_forward:
+                node_forward[data['label']] = node_count
+                node_backward[node_count] = data['label']
+                node_count += 1
+
+        max_edges = max(max_edges, len(G.edges()))
+        min_edges = min(min_edges, len(G.edges()))
+        for _, _, data in G.edges.data():
+            if data['label'] not in edge_forward:
+                edge_forward[data['label']] = edge_count
+                edge_backward[edge_count] = data['label']
+                edge_count += 1
+
+        max_degree = max(max_degree, max([d for _, d in G.degree()]))
+
+    feature_map = {
+        'node_forward': node_forward,
+        'node_backward': node_backward,
+        'edge_forward': edge_forward,
+        'edge_backward': edge_backward,
+        'max_nodes': max_nodes,
+        'min_nodes': min_nodes,
+        'max_edges': max_edges,
+        'min_edges': min_edges,
+        'max_degree': max_degree
+    }
+
+    print('Successfully done node count', node_count)
+    print('Successfully done edge count', edge_count)
+
+    return feature_map

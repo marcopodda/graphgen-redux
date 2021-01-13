@@ -3,9 +3,9 @@ import numpy as np
 import networkx as nx
 from joblib import Parallel, delayed
 
-from core.serialization import save_pickle
+from core.serialization import save_pickle, load_pickle
 from core.utils import get_n_jobs, flatten
-from datasets.utils import sample_subgraphs
+from datasets.utils import sample_subgraphs, mapping
 
 
 DATA_DIR = Path("DATA")
@@ -23,8 +23,7 @@ DATASETS = [
 ]
 
 
-def process_molecule_dataset(name):
-    root_dir = DATA_DIR / name
+def _process_molecule_dataset(root_dir, name):
     data_file = root_dir / f"{name.lower()}.txt"
 
     lines = []
@@ -68,8 +67,7 @@ def process_molecule_dataset(name):
     return graphs
 
 
-def process_citation_dataset(name, num_factor=5, iterations=150):
-    root_dir = DATA_DIR / name
+def _process_citation_dataset(root_dir, name, num_factor=5, iterations=150):
     content_file = root_dir / f"{name}.content"
     cites_file = root_dir / f"{name}.cites"
 
@@ -103,8 +101,7 @@ def process_citation_dataset(name, num_factor=5, iterations=150):
     return flatten(graph_list)
 
 
-def process_tud_dataset(name, min_num_nodes=20, max_num_nodes=100):
-    root_dir = DATA_DIR / name
+def _process_tud_dataset(root_dir, name, min_num_nodes=20, max_num_nodes=100):
     adj_file = root_dir / f"{name}_A.txt"
     graph_ind_file = root_dir / f"{name}_graph_indicator.txt"
     node_lab_file = root_dir / f"{name}_node_labels.txt"
@@ -150,15 +147,26 @@ def process_tud_dataset(name, min_num_nodes=20, max_num_nodes=100):
     return graphs
 
 
+def process_dataset(name, fun):
+    root_dir = DATA_DIR / name
+
+    if not (root_dir / "graphs.pkl").exists():
+        graphs = fun(root_dir)
+        save_pickle(graphs, root_dir / "graphs.pkl")
+
+    if not (root_dir / "map.dict").exists():
+        graphs = load_pickle(root_dir / "graphs.pkl")
+        map_dict = mapping(graphs)
+        save_pickle(map_dict, root_dir / "map.dict")
+
+
 def create_dataset(dataset_name):
     np.random.seed(123)
     if dataset_name in ["All", "Breast", "Leukemia", "Lung", "Yeast"]:
-        graphs = process_molecule_dataset(dataset_name)
+        process_dataset(dataset_name, _process_molecule_dataset)
     elif dataset_name in ["cora", "citeseer"]:
-        graphs = process_citation_dataset(dataset_name)
+        process_dataset(dataset_name, _process_citation_dataset)
     elif dataset_name in ["ENZYMES"]:
-        graphs = process_tud_dataset(dataset_name)
+        process_dataset(dataset_name, _process_tud_dataset)
     else:
         raise Exception("Unknown dataset name!")
-
-    save_pickle(graphs, DATA_DIR / dataset_name / "graphs.pkl")

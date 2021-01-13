@@ -11,11 +11,11 @@ from dfscode.dfs_wrapper import get_min_dfscode
 MAX_WORKERS = 48
 
 
-def mapping(path, dest):
+def mapping(graphs):
     """
     :param path: path to folder which contains pickled networkx graphs
     :param dest: place where final dictionary pickle file is stored
-    :return: dictionary of 4 dictionary which contains forward 
+    :return: dictionary of 4 dictionary which contains forward
     and backwards mappings of vertices and labels, max_nodes and max_edges
     """
 
@@ -25,29 +25,24 @@ def mapping(path, dest):
     max_nodes, max_edges, max_degree = 0, 0, 0
     min_nodes, min_edges = float('inf'), float('inf')
 
-    for filename in tqdm(os.listdir(path)):
-        if filename.endswith(".dat"):
-            f = open(path + filename, 'rb')
-            G = pickle.load(f)
-            f.close()
+    for G in graphs:
+        max_nodes = max(max_nodes, len(G.nodes()))
+        min_nodes = min(min_nodes, len(G.nodes()))
+        for _, data in G.nodes.data():
+            if data['label'] not in node_forward:
+                node_forward[data['label']] = node_count
+                node_backward[node_count] = data['label']
+                node_count += 1
 
-            max_nodes = max(max_nodes, len(G.nodes()))
-            min_nodes = min(min_nodes, len(G.nodes()))
-            for _, data in G.nodes.data():
-                if data['label'] not in node_forward:
-                    node_forward[data['label']] = node_count
-                    node_backward[node_count] = data['label']
-                    node_count += 1
+        max_edges = max(max_edges, len(G.edges()))
+        min_edges = min(min_edges, len(G.edges()))
+        for _, _, data in G.edges.data():
+            if data['label'] not in edge_forward:
+                edge_forward[data['label']] = edge_count
+                edge_backward[edge_count] = data['label']
+                edge_count += 1
 
-            max_edges = max(max_edges, len(G.edges()))
-            min_edges = min(min_edges, len(G.edges()))
-            for _, _, data in G.edges.data():
-                if data['label'] not in edge_forward:
-                    edge_forward[data['label']] = edge_count
-                    edge_backward[edge_count] = data['label']
-                    edge_count += 1
-
-            max_degree = max(max_degree, max([d for n, d in G.degree()]))
+        max_degree = max(max_degree, max([d for _, d in G.degree()]))
 
     feature_map = {
         'node_forward': node_forward,
@@ -60,10 +55,6 @@ def mapping(path, dest):
         'min_edges': min_edges,
         'max_degree': max_degree
     }
-
-    f = open(dest, 'wb')
-    pickle.dump(feature_map, f)
-    f.close()
 
     print('Successfully done node count', node_count)
     print('Successfully done edge count', edge_count)
@@ -232,7 +223,7 @@ def calc_max_prev_node_helper(idx, graphs_path):
 
 def calc_max_prev_node(graphs_path):
     """
-    Approximate max_prev_node from simulating bfs sequences 
+    Approximate max_prev_node from simulating bfs sequences
     """
     max_prev_node = []
     count = len([name for name in os.listdir(
