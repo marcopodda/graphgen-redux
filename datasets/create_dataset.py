@@ -137,7 +137,7 @@ def process_dataset(name, fun):
     root_dir = DATA_DIR / name
 
     if not (root_dir / "graphs.pkl").exists():
-        graphs = fun(root_dir)
+        graphs = fun(root_dir, name)
         save_pickle(graphs, root_dir / "graphs.pkl")
 
     if not (root_dir / "map.dict").exists():
