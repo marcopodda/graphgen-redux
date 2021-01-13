@@ -42,12 +42,6 @@ class Args:
         # if none, then auto calculate
         self.max_prev_node = None  # max previous node that looks back for GraphRNN
 
-        # # Specific to Autoencoder
-        # self.reduced_ae_input = 'onehot'    # full | reduced | onehot
-        # self.GCN_hidden_features = 1024
-        # self.GCN_num_layers=1
-        # self.GCN_dropout=0.2
-
         # Specific to RNN encoder
         self.embedding_size_encoder_rnn = 256
         self.hidden_size_encoder_rnn = 512

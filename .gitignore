@@ -123,3 +123,4 @@ SERVER
 
 # custom
 bin
+*.dat
