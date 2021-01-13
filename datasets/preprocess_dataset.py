@@ -70,7 +70,7 @@ def graphs_to_min_dfscodes(graphs):
 def reduce_dfs_codes(dfs_codes):
     reduced = []
     for dfs_code in dfs_codes:
-        reduced.append([[e[0], e[1], "".join(e[2:])] for e in dfs_code])
+        reduced.append([[e[0], e[1], "-".join(e[2:])] for e in dfs_code])
     return reduced
 
 def get_unique_symbols(reduced_dfs_codes):
@@ -90,15 +90,18 @@ def get_unique_symbols(reduced_dfs_codes):
 
 def preprocess_dataset(name):
     graphs = load_pickle(DATA_DIR / name / "graphs.pkl")
-    mapping = load_pickle(DATA_DIR / name / "map.dict")
+    if not (DATA_DIR / name / "dfs_codes.pkl").exists():
+        dfs_codes = graphs_to_min_dfscodes(graphs)
+        save_pickle(dfs_codes, DATA_DIR / name / "dfs_codes.pkl")
 
-    dfs_codes = graphs_to_min_dfscodes(graphs)
-    reduced_dfs_codes = reduce_dfs_codes(dfs_codes)
-    reduced_forward, reduced_backward = get_unique_symbols(reduced_dfs_codes)
+        if not (DATA_DIR / name / "reduced_dfs_codes.pkl").exists():
+            reduced_dfs_codes = reduce_dfs_codes(dfs_codes)
+            save_pickle(reduced_dfs_codes, DATA_DIR / name / "reduced_dfs_codes.pkl")
 
-    mapping["reduced_forward"] = reduced_forward
-    mapping["reduced_backward"] = reduced_backward
-
-    save_pickle(mapping, DATA_DIR / name / "reduced_map.dict")
-    save_pickle(dfs_codes, DATA_DIR / name / "dfs_codes.pkl")
-    save_pickle(reduced_dfs_codes, DATA_DIR / name / "reduced_dfs_codes.pkl")
+        if not (DATA_DIR / name / "reduced_map.dict").exists():
+            reduced_dfs_codes = load_pickle(DATA_DIR / name / "reduced_dfs_codes.pkl")
+            reduced_forward, reduced_backward = get_unique_symbols(reduced_dfs_codes)
+            mapping = load_pickle(DATA_DIR / name / "map.dict")
+            mapping["reduced_forward"] = reduced_forward
+            mapping["reduced_backward"] = reduced_backward
+            save_pickle(mapping, DATA_DIR / name / "reduced_map.dict")
