@@ -9,7 +9,7 @@ def command_parser():
     sub = parser.add_subparsers()
 
     sub_create = sub.add_parser('create', help="Create a given dataset.")
-    sub_create.add_argument("--name", choices=DATASETS, dest="dataset_name", required=True)
+    sub_create.add_argument("--dataset-name", choices=DATASETS, default="cora")
     sub_create.set_defaults(command='create')
 
     sub_train = sub.add_parser('train', help="Train.")
