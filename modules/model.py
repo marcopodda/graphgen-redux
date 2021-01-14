@@ -82,7 +82,7 @@ class Model(nn.Module):
 
         # Teacher forcing: Feed the target as the next input
         # Start token is all zeros
-        sos = torch.zeros(batch_size, 1, self.dim_input)
+        sos = torch.zeros(batch_size, 1, self.dim_input, device=y.device)
         rnn_input = torch.cat([sos, y[:, :-1, :]], dim=1)
 
         # Forward propogation
@@ -160,7 +160,7 @@ class ReducedModel(nn.Module):
 
         # Teacher forcing: Feed the target as the next input
         # Start token is all zeros
-        sos = torch.zeros(batch_size, 1, self.dim_input)
+        sos = torch.zeros(batch_size, 1, self.dim_input, device=y.device)
         rnn_input = torch.cat([sos, y[:, :-1, :]], dim=1)
 
         # Forward propogation
