@@ -10,7 +10,8 @@ class MLP(nn.Module):
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.Linear(hidden_size, output_size))
+            nn.Linear(hidden_size, output_size),
+            nn.Softmax(dim=2))
 
         for m in self.modules():
             if isinstance(m, nn.Linear):
