@@ -70,19 +70,20 @@ class Model(nn.Module):
         v2 = torch.index_select(batch['v2'][:, :max_length ], 0, sort_indices)
 
         # One-hot encode sequences
-        x_t1 = F.one_hot(t1, num_classes=self.dim_ts_out + 2)[:, :, :-1]
-        x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 2)[:, :, :-1]
+        x_t1 = F.one_hot(t1, num_classes=self.dim_ts_out + 1)[:, :, :-1]
+        x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 1)[:, :, :-1]
         x_v1 = F.one_hot(v1, num_classes=self.dim_vs_out + 1)[:, :, :-1]
         x_e = F.one_hot(e, num_classes=self.dim_e_out + 1)[:, :, :-1]
         x_v2 = F.one_hot(v2, num_classes=self.dim_vs_out + 1)[:, :, :-1]
         y = torch.cat((x_t1, x_t2, x_v1, x_e, x_v2), dim=2).float()
+
 
         # Init rnn
         self.rnn.hidden = self.rnn.init_hidden(batch_size=batch_size, device=y.device)
 
         # Teacher forcing: Feed the target as the next input
         # Start token is all zeros
-        sos = torch.zeros(batch_size, 1, y.size(2), device=y.device)
+        sos = torch.zeros(batch_size, 1, self.dim_input, device=y.device)
         rnn_input = torch.cat([sos, y[:, :-1, :]], dim=1)
 
         # Forward propogation
@@ -150,13 +151,13 @@ class ReducedModel(nn.Module):
         tok = torch.index_select(batch['tok'][:, :max_length + 1], 0, sort_indices)
 
         # One-hot encode sequences
-        x_t1 = F.one_hot(t1, num_classes=self.dim_ts_out + 2)[:, :, :-1]
-        x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 2)[:, :, :-1]
+        x_t1 = F.one_hot(t1, num_classes=self.dim_ts_out + 1)[:, :, :-1]
+        x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 1)[:, :, :-1]
         x_tok = F.one_hot(tok, num_classes=self.dim_tok_out + 1)[:, :, :-1]
         y = torch.cat((x_t1, x_t2, x_tok), dim=2).float()
 
         # Init rnn
-        self.rnn.hidden = self.rnn.init_hidden(batch_size=batch_size)
+        self.rnn.hidden = self.rnn.init_hidden(batch_size=batch_size, device=y.device)
 
         # Teacher forcing: Feed the target as the next input
         # Start token is all zeros
