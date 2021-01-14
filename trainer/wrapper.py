@@ -28,5 +28,5 @@ class Wrapper(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         y_pred, y = self.model(batch)
-        loss = F.binary_cross_entropy_with_logits(y_pred, y)
+        loss = F.binary_cross_entropy(y_pred, y)
         return loss
