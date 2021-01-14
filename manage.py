@@ -4,6 +4,7 @@ from pathlib import Path
 from core.settings import DATASETS
 from datasets.create_dataset import create_dataset
 from datasets.preprocess_dataset import preprocess_dataset
+from trainer.trainer import Trainer
 
 
 def command_parser():
@@ -14,17 +15,18 @@ def command_parser():
     sub_create.add_argument("--dataset-name", choices=DATASETS, default="cora")
     sub_create.set_defaults(command='create')
 
-    sub_dfscode = sub.add_parser('dfscode', help="Create DFS codes.")
-    sub_dfscode.add_argument("--dataset-name", choices=DATASETS, default="cora")
-    sub_dfscode.set_defaults(command='dfscode')
+    sub_preprocess = sub.add_parser('preprocess', help="Create DFS codes.")
+    sub_preprocess.add_argument("--dataset-name", choices=DATASETS, default="cora")
+    sub_preprocess.set_defaults(command='preprocess')
 
     sub_train = sub.add_parser('train', help="Train.")
-    # sub_train.add_argument("--exp-name", default="Experiment", help="Experiment name.")
-    # sub_train.add_argument("--dataset-name", default="drd2", help="Dataset name.")
-    # sub_train.add_argument("--hparams-file", default="hparams.yml", help="HParams file.")
-    # sub_train.add_argument("--root-dir", default="RESULTS", help="Output folder.")
-    # sub_train.add_argument("--gpu", default=0, help="GPU number.", type=int)
-    # sub_train.add_argument("--debug", default=False, action="store_true", help="Debug mode.")
+    sub_train.add_argument("--reduced", default=False, action="store_true", help="Use reduced model.")
+    sub_train.add_argument("--exp-name", default="Experiment", help="Experiment name.")
+    sub_train.add_argument("--dataset-name", default="drd2", help="Dataset name.")
+    sub_train.add_argument("--hparams-file", default="hparams.yml", help="HParams file.")
+    sub_train.add_argument("--root-dir", default="RESULTS", help="Output folder.")
+    sub_train.add_argument("--gpu", default=0, help="GPU number.", type=int)
+    sub_train.add_argument("--debug", default=False, action="store_true", help="Debug mode.")
     sub_train.set_defaults(command='train')
 
     # sub_validate = sub.add_parser('validate', help="Validation.")
@@ -55,12 +57,12 @@ if __name__ == "__main__":
     if args.command == "create":
         create_dataset(args.dataset_name)
 
-    if args.command == "dfscode":
+    elif args.command == "preprocess":
         preprocess_dataset(args.dataset_name)
 
-    # elif args.command == "train":
-    #     translator = Translator.from_args(args)
-    #     translator.train()
+    elif args.command == "train":
+        trainer = Trainer.from_args(args)
+        trainer.train()
 
     # elif args.command == "validate":
     #     translator = Translator.load(Path(args.exp_path))

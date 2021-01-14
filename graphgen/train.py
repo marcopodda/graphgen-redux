@@ -155,7 +155,7 @@ def evaluate_loss(args, model, data, feature_map, reduced_map, x=None, epoch=0, 
 
     x_target = torch.cat((x_t1, x_t2, x_token), dim=2).float()
 
-    # Realign hidden received from encoder with 
+    # Realign hidden received from encoder with
     # Wrong to do it, hid are obtained by feeding x_target already index_selected
     # if x is not None:
     #     x = torch.index_select(x, 0, sort_indices)
@@ -223,12 +223,12 @@ def evaluate_loss(args, model, data, feature_map, reduced_map, x=None, epoch=0, 
                     0, timestamp2 + max_nodes + 1] = 1
             dfscode_rnn_input[torch.arange(args.batch_size), 0, 2 *
                     max_nodes + 2 + token] = 1
-            
+
             # dfscode_rnn_input = x_pred
 
         pred = pack_padded_sequence(pred, x_len + 1, batch_first=True)
         pred, _ = pad_packed_sequence(pred, batch_first=True)
-        
+
         loss_sum = F.binary_cross_entropy(
            pred, x_target, reduction='none')
         loss = torch.mean(
@@ -327,12 +327,7 @@ def predict_graphs(eval_args, x=None):
 
         # Generate triple by triple (edge by edge)
         for i in range(eval_args.max_num_edges):
-            # Compute feedforward for current step
-            if train_args.attention == 'varattn':
-                timestamp1, timestamp2, token, _ = model.forward(
-                    eval_args, rnn_input)
-            else:
-                timestamp1, timestamp2, token = model.forward(
+            timestamp1, timestamp2, token = model.forward(
                     eval_args, rnn_input)
 
             timestamp1, timestamp2, token = timestamp1.reshape(eval_args.batch_size, -1), \

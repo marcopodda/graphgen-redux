@@ -80,9 +80,9 @@ def get_unique_symbols(reduced_dfs_codes):
     for reduced_dfs_code in reduced_dfs_codes:
         symbols = [e[2] for e in reduced_dfs_code]
         for sym in symbols:
-            if sym not in reduced_backward:
-                reduced_backward[sym] = count
-                reduced_forward[count] = sym
+            if sym not in reduced_forward:
+                reduced_forward[sym] = count
+                reduced_backward[count] = sym
                 count += 1
 
     return reduced_forward, reduced_backward
