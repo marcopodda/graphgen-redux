@@ -22,7 +22,7 @@ class Wrapper(pl.LightningModule):
         return self.model(batch)
 
     def configure_optimizers(self):
-        optimizer = Adam(self.parameters(), lr=self.hparams.lr)
+        optimizer = Adam(self.parameters(), lr=self.hparams.lr, weight_decay=5e-5)
         scheduler = MultiStepLR(optimizer, milestones=self.hparams.milestones)
         return [optimizer], [scheduler]
 
