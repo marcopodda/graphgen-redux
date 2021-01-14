@@ -15,7 +15,7 @@ class Model(nn.Module):
         self.dim_ts_out = mapper['max_nodes'] + 1
         self.dim_vs_out  = len(mapper['node_forward']) + 1
         self.dim_e_out = len(mapper['edge_forward']) + 1
-        self.dim_input = 2 * (self.dim_ts_out) + 2 * self.dim_vs_out + self.dim_e_out
+        self.dim_input = 2 * self.dim_ts_out + 2 * self.dim_vs_out + self.dim_e_out
 
         self.rnn = RNN(
             input_size=self.dim_input,
@@ -82,7 +82,7 @@ class Model(nn.Module):
 
         # Teacher forcing: Feed the target as the next input
         # Start token is all zeros
-        sos = torch.zeros(batch_size, 1, self.dim_input, device=y.device)
+        sos = torch.zeros(batch_size, 1, y.size(2), device=y.device)
         rnn_input = torch.cat([sos, y[:, :-1, :]], dim=1)
 
         # Forward propogation
