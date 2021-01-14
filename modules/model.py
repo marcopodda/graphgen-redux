@@ -78,7 +78,7 @@ class Model(nn.Module):
         y = torch.cat((x_t1, x_t2, x_v1, x_e, x_v2), dim=2).float()
 
         # Init rnn
-        self.rnn.hidden = self.rnn.init_hidden(batch_size=batch_size)
+        self.rnn.hidden = self.rnn.init_hidden(batch_size=batch_size, device=y.device)
 
         # Teacher forcing: Feed the target as the next input
         # Start token is all zeros
@@ -86,7 +86,7 @@ class Model(nn.Module):
         rnn_input = torch.cat([sos, y[:, :-1, :]], dim=1)
 
         # Forward propogation
-        rnn_output = self.rnn(rnn_input, x_len=lengths + 1)
+        rnn_output = self.rnn(rnn_input, x_len=lengths)
 
         # Evaluating dfscode tuple
         out_t1 = self.output_t1(rnn_output)
@@ -97,7 +97,7 @@ class Model(nn.Module):
         y_pred = torch.cat([out_t1, out_t2, out_v1, out_e, out_v2], dim=2)
 
         # Cleaning the padding i.e setting it to zero
-        y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
+        y_pred = pack_padded_sequence(y_pred, lengths=lengths, batch_first=True)
         y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
 
         return y_pred, y
