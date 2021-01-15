@@ -63,11 +63,11 @@ class Model(nn.Module):
         lengths, sort_indices = torch.sort(lengths, dim=0, descending=True)
 
         # Prepare targets with end_tokens already there
-        t1 = torch.index_select(batch['t1'][:, :max_length ], 0, sort_indices)
-        t2 = torch.index_select(batch['t2'][:, :max_length ], 0, sort_indices)
-        v1 = torch.index_select(batch['v1'][:, :max_length ], 0, sort_indices)
-        e = torch.index_select(batch['e'][:, :max_length ], 0, sort_indices)
-        v2 = torch.index_select(batch['v2'][:, :max_length ], 0, sort_indices)
+        t1 = torch.index_select(batch['t1'][:, :max_length], 0, sort_indices)
+        t2 = torch.index_select(batch['t2'][:, :max_length], 0, sort_indices)
+        v1 = torch.index_select(batch['v1'][:, :max_length], 0, sort_indices)
+        e = torch.index_select(batch['e'][:, :max_length], 0, sort_indices)
+        v2 = torch.index_select(batch['v2'][:, :max_length], 0, sort_indices)
 
         # One-hot encode sequences
         x_t1 = F.one_hot(t1, num_classes=self.dim_ts_out + 1)[:, :, :-1]
@@ -108,9 +108,9 @@ class ReducedModel(nn.Module):
     def __init__(self, hparams, mapper):
         super().__init__()
 
-        self.dim_ts_out = mapper['max_nodes']
+        self.dim_ts_out = mapper['max_nodes'] + 1
         self.dim_tok_out  = len(mapper['reduced_forward']) + 1
-        self.dim_input = 2 * (self.dim_ts_out + 1) + self.dim_tok_out
+        self.dim_input = 2 * self.dim_ts_out + self.dim_tok_out
 
         self.rnn = RNN(
             input_size=self.dim_input,
@@ -122,13 +122,13 @@ class ReducedModel(nn.Module):
         self.output_t1 = MLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
-            output_size=self.dim_ts_out+1,
+            output_size=self.dim_ts_out,
             dropout=hparams.dropout)
 
         self.output_t2 = MLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
-            output_size=self.dim_ts_out+1,
+            output_size=self.dim_ts_out,
             dropout=hparams.dropout)
 
         self.output_tok = MLP(
@@ -139,16 +139,16 @@ class ReducedModel(nn.Module):
 
     def forward(self, batch):
         lengths = batch['len']
-        max_length = max(lengths)
+        max_length = lengths.max() + 1
         batch_size = lengths.size(0)
 
         # sort input for packing variable length sequences
         lengths, sort_indices = torch.sort(lengths, dim=0, descending=True)
 
         # Prepare targets with end_tokens already there
-        t1 = torch.index_select(batch['t1'][:, :max_length + 1], 0, sort_indices)
-        t2 = torch.index_select(batch['t2'][:, :max_length + 1], 0, sort_indices)
-        tok = torch.index_select(batch['tok'][:, :max_length + 1], 0, sort_indices)
+        t1 = torch.index_select(batch['t1'][:, :max_length], 0, sort_indices)
+        t2 = torch.index_select(batch['t2'][:, :max_length], 0, sort_indices)
+        tok = torch.index_select(batch['tok'][:, :max_length], 0, sort_indices)
 
         # One-hot encode sequences
         x_t1 = F.one_hot(t1, num_classes=self.dim_ts_out + 1)[:, :, :-1]
@@ -177,4 +177,4 @@ class ReducedModel(nn.Module):
         y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
         y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
 
-        return y_pred, y
+        return y_pred, y, lengths
