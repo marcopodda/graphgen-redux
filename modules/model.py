@@ -101,7 +101,7 @@ class Model(nn.Module):
         y_pred = pack_padded_sequence(y_pred, lengths=lengths+1, batch_first=True)
         y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
 
-        return y_pred, y
+        return y_pred, y, lengths
 
 
 class ReducedModel(nn.Module):

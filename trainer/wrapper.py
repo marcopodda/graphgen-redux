@@ -27,6 +27,8 @@ class Wrapper(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
-        y_pred, y = self.model(batch)
-        loss = F.binary_cross_entropy(y_pred, y)
+        y_pred, y, lengths = self.model(batch)
+        # loss = F.binary_cross_entropy(y_pred, y)
+        loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
+        loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
         return loss
