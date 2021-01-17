@@ -18,7 +18,7 @@ class Generator(Base):
             mapper=self.mapper,
             reduced=self.reduced)
 
-        generating_fun = self._gen if self.reduced else self._gen_reduced
+        generating_fun = self._gen_reduced if self.reduced else self._gen
         samples = generating_fun(wrapper.model, self.mapper, device)
         reduced = "_red" if self.reduced else ""
         save_pickle(samples, self.dirs.samples / f"samples_{epoch:02d}{reduced}.pkl")
