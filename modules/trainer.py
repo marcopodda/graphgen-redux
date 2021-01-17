@@ -37,7 +37,7 @@ class Trainer(Base):
             min_delta=1e-4,
             patience=10,
             verbose=False,
-            mode='max'
+            mode='min'
         )
 
         wrapper = Wrapper(
