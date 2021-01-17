@@ -58,20 +58,32 @@ class Evaluator(Base):
             real_sample = random.sample(real_graphs, num_samples)
             gen_sample = gen_graphs[i*num_samples:i*num_samples+num_samples]
 
+            print("Avg. node count...")
             node_count_avg_ref.append(mean([len(G.nodes()) for G in real_sample]))
             node_count_avg_pred.append(mean([len(G.nodes()) for G in gen_sample]))
 
+            print("Avg. edge count...")
             edge_count_avg_ref.append(mean([len(G.edges()) for G in real_sample]))
             edge_count_avg_pred.append(mean([len(G.edges()) for G in gen_sample]))
 
+            print("Degree distribution...")
             degree_mmd.append(stats.degree_stats(real_sample, gen_sample))
+            print("Clustering coefficient distribution...")
             clustering_mmd.append(stats.clustering_stats(real_sample, gen_sample))
+
+            print("Orbit counts distribution...")
             orbit_mmd.append(stats.orbit_stats_all(real_sample, gen_sample))
 
+            print("NSPDK...")
             nspdk_mmd.append(stats.nspdk_stats(real_sample, gen_sample))
 
+            print("Node labels distribution...")
             node_label_mmd.append(stats.node_label_stats(real_sample, gen_sample))
+
+            print("Edge labels distribution...")
             edge_label_mmd.append(stats.edge_label_stats(real_sample, gen_sample))
+
+            print("Node labels + Degree distribution...")
             node_label_and_degree.append(stats.node_label_and_degree_joint_stats(real_sample, gen_sample))
 
         print_stats(
