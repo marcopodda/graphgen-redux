@@ -65,4 +65,4 @@ if __name__ == "__main__":
 
     elif args.command == "evaluate":
         evaluator = Evaluator.initialize(Path(args.exp_path))
-        evaluator.evaluate(partition=args.partition, epoch=args.epoch)
+        evaluator.evaluate(epoch=args.epoch)
