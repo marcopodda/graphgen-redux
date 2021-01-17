@@ -34,7 +34,7 @@ class Trainer(Base):
         ckpt_callback = ModelCheckpoint(filepath=self.dirs.ckpt, save_top_k=-1)
         early_stop_callback = EarlyStopping(
             monitor='val_loss',
-            min_delta=0.05,
+            min_delta=1e-4,
             patience=10,
             verbose=False,
             mode='max'

@@ -36,4 +36,4 @@ class Wrapper(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss = self.shared_step(batch, batch_idx)
-        self.log("val_loss", loss)
+        self.log("val_loss", loss, prog_bar=True, on_epoch=True)
