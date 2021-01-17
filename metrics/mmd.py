@@ -76,7 +76,6 @@ def compute_mmd(samples1, samples2, metric, is_hist=True, n_jobs=None):
 
     X = kernel_compute(samples1, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
     Y = kernel_compute(samples2, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
-    Z = kernel_compute(samples1, Y=samples2, is_hist=is_hist,
-                       metric=metric, n_jobs=n_jobs)
+    Z = kernel_compute(samples1, Y=samples2, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
 
     return np.average(X) + np.average(Y) - 2 * np.average(Z)

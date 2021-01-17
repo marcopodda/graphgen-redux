@@ -32,26 +32,17 @@ def degree_stats(graph_ref_list, graph_pred_list):
     sample_pred = []
 
     # in case an empty graph is generated
-    graph_pred_list = [
-        G for G in graph_pred_list if not G.number_of_nodes() == 0]
+    graph_pred_list = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
 
-    prev = datetime.now()
+    start = datetime.now()
 
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
     sample_ref = P(delayed(degree_worker)(G) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(degree_worker)(G) for i, G in enumerate(graph_pred_list))
 
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for deg_hist in executor.map(degree_worker, graph_ref_list):
-    #         sample_ref.append(deg_hist)
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for deg_hist in executor.map(degree_worker, graph_pred_list):
-    #         sample_pred.append(deg_hist)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
 
-    mmd_dist = mmd.compute_mmd(
-        sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
-
-    elapsed = datetime.now() - prev
+    elapsed = datetime.now() - start
     if PRINT_TIME:
         print('Time computing degree mmd: ', elapsed)
 
@@ -80,7 +71,7 @@ def node_label_stats(graph_ref_list, graph_pred_list):
     graph_pred_list = [
         G for G in graph_pred_list if not G.number_of_nodes() == 0]
 
-    prev = datetime.now()
+    start = datetime.now()
 
     node_map = {}
     for graph in graph_ref_list + graph_pred_list:
@@ -92,17 +83,9 @@ def node_label_stats(graph_ref_list, graph_pred_list):
     sample_ref = P(delayed(node_label_worker)(G, node_map) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(node_label_worker)(G, node_map) for i, G in enumerate(graph_pred_list))
 
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for node_label_hist in executor.map(partial(node_label_worker, node_map=node_map), graph_ref_list):
-    #         sample_ref.append(node_label_hist)
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for node_label_hist in executor.map(partial(node_label_worker, node_map=node_map), graph_pred_list):
-    #         sample_pred.append(node_label_hist)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
 
-    mmd_dist = mmd.compute_mmd(
-        sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
-
-    elapsed = datetime.now() - prev
+    elapsed = datetime.now() - start
     if PRINT_TIME:
         print('Time computing node label mmd: ', elapsed)
 
@@ -128,12 +111,10 @@ def edge_label_stats(graph_ref_list, graph_pred_list):
     sample_pred = []
 
     # in case an empty graph is generated
-    graph_ref_list = [G for G in graph_ref_list if not (
-        G.number_of_nodes() == 0 or G.number_of_edges() == 0)]
-    graph_pred_list = [G for G in graph_pred_list if not (
-        G.number_of_nodes() == 0 or G.number_of_edges() == 0)]
+    graph_ref_list = [G for G in graph_ref_list if not (G.number_of_nodes() == 0 or G.number_of_edges() == 0)]
+    graph_pred_list = [G for G in graph_pred_list if not (G.number_of_nodes() == 0 or G.number_of_edges() == 0)]
 
-    prev = datetime.now()
+    start = datetime.now()
 
     edge_map = {}
     for graph in graph_ref_list + graph_pred_list:
@@ -145,17 +126,9 @@ def edge_label_stats(graph_ref_list, graph_pred_list):
     sample_ref = P(delayed(edge_label_worker)(G, edge_map) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(edge_label_worker)(G, edge_map) for i, G in enumerate(graph_pred_list))
 
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for edge_label_hist in executor.map(partial(edge_label_worker, edge_map=edge_map), graph_ref_list):
-    #         sample_ref.append(edge_label_hist)
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for edge_label_hist in executor.map(partial(edge_label_worker, edge_map=edge_map), graph_pred_list):
-    #         sample_pred.append(edge_label_hist)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
 
-    mmd_dist = mmd.compute_mmd(
-        sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
-
-    elapsed = datetime.now() - prev
+    elapsed = datetime.now() - start
     if PRINT_TIME:
         print('Time computing edge label mmd: ', elapsed)
 
@@ -172,28 +145,17 @@ def clustering_worker(G, bins):
 def clustering_stats(graph_ref_list, graph_pred_list, bins=100):
     sample_ref = []
     sample_pred = []
-    graph_pred_list = [
-        G for G in graph_pred_list if not G.number_of_nodes() == 0]
+    graph_pred_list = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
 
-    prev = datetime.now()
+    start = datetime.now()
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
     sample_ref = P(delayed(clustering_worker)(G, bins) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(clustering_worker)(G, bins) for i, G in enumerate(graph_pred_list))
 
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for clustering_hist in executor.map(clustering_worker,
-    #                                         [(G, bins) for G in graph_ref_list]):
-    #         sample_ref.append(clustering_hist)
+    metric = partial(mmd.gaussian_emd, sigma=0.1, distance_scaling=bins)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, metric=metric, n_jobs=MAX_WORKERS)
 
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for clustering_hist in executor.map(clustering_worker,
-    #                                         [(G, bins) for G in graph_pred_list]):
-    #         sample_pred.append(clustering_hist)
-
-    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, metric=partial(
-        mmd.gaussian_emd, sigma=0.1, distance_scaling=bins), n_jobs=MAX_WORKERS)
-
-    elapsed = datetime.now() - prev
+    elapsed = datetime.now() - start
     if PRINT_TIME:
         print('Time computing clustering mmd: ', elapsed)
 
@@ -254,32 +216,21 @@ def orbit_stats_all(graph_ref_list, graph_pred_list):
     total_counts_ref = []
     total_counts_pred = []
 
-    graph_pred_list = [
-        G for G in graph_pred_list if not G.number_of_nodes() == 0]
+    graph_pred_list = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
 
-    prev = datetime.now()
+    start = datetime.now()
 
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
     total_counts_ref = P(delayed(orbits_counts_worker)(G) for i, G in enumerate(graph_ref_list))
     total_counts_pred = P(delayed(orbits_counts_worker)(G) for i, G in enumerate(graph_pred_list))
 
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for orbit_counts_graph in executor.map(orbits_counts_worker, graph_ref_list):
-    #         if orbit_counts_graph is not None:
-    #             total_counts_ref.append(orbit_counts_graph)
-
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for orbit_counts_graph in executor.map(orbits_counts_worker, graph_pred_list):
-    #         if orbit_counts_graph is not None:
-    #             total_counts_pred.append(orbit_counts_graph)
-
     total_counts_ref = np.array(total_counts_ref)
     total_counts_pred = np.array(total_counts_pred)
 
-    mmd_dist = mmd.compute_mmd(total_counts_ref, total_counts_pred, metric=partial(
-        mmd.gaussian, sigma=30.0), is_hist=False, n_jobs=MAX_WORKERS)
+    metric = partial(mmd.gaussian, sigma=30.0)
+    mmd_dist = mmd.compute_mmd(total_counts_ref, total_counts_pred, metric=metric, is_hist=False, n_jobs=MAX_WORKERS)
 
-    elapsed = datetime.now() - prev
+    elapsed = datetime.now() - start
     if PRINT_TIME:
         print('Time computing orbit mmd: ', elapsed)
 
@@ -299,10 +250,9 @@ def node_label_and_degree_joint_stats(graph_ref_list, graph_pred_list):
     sample_pred = []
 
     # in case an empty graph is generated
-    graph_pred_list = [
-        G for G in graph_pred_list if not G.number_of_nodes() == 0]
+    graph_pred_list = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
 
-    prev = datetime.now()
+    start = datetime.now()
 
     node_map = {}
     for graph in graph_ref_list + graph_pred_list:
@@ -315,19 +265,9 @@ def node_label_and_degree_joint_stats(graph_ref_list, graph_pred_list):
     sample_ref = P(delayed(node_label_and_degree_worker)(G, node_map) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(node_label_and_degree_worker)(G, node_map) for i, G in enumerate(graph_pred_list))
 
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for node_label_hist in executor.map(partial(
-    #             node_label_and_degree_worker, node_map=node_map), graph_ref_list):
-    #         sample_ref.append(node_label_hist)
-    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-    #     for node_label_hist in executor.map(partial(
-    #             node_label_and_degree_worker, node_map=node_map), graph_pred_list):
-    #         sample_pred.append(node_label_hist)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
 
-    mmd_dist = mmd.compute_mmd(
-        sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
-
-    elapsed = datetime.now() - prev
+    elapsed = datetime.now() - start
     if PRINT_TIME:
         print('Time computing joint node label and degree mmd: ', elapsed)
 
@@ -335,15 +275,13 @@ def node_label_and_degree_joint_stats(graph_ref_list, graph_pred_list):
 
 
 def nspdk_stats(graph_ref_list, graph_pred_list):
-    graph_pred_list = [
-        G for G in graph_pred_list if not G.number_of_nodes() == 0]
+    graph_pred_list = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
 
-    prev = datetime.now()
+    start = datetime.now()
 
-    mmd_dist = mmd.compute_mmd(graph_ref_list, graph_pred_list, metric='nspdk',
-                               is_hist=False, n_jobs=MAX_WORKERS)
+    mmd_dist = mmd.compute_mmd(graph_ref_list, graph_pred_list, metric='nspdk', is_hist=False, n_jobs=MAX_WORKERS)
 
-    elapsed = datetime.now() - prev
+    elapsed = datetime.now() - start
     if PRINT_TIME:
         print('Time computing NSPDK mmd: ', elapsed)
 
