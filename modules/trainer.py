@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
 from core.serialization import save_yaml
 from core.hparams import HParams
@@ -32,6 +32,13 @@ class Trainer(Base):
     def train(self):
         logger = TensorBoardLogger(save_dir=self.dirs.exp, name="", version="logs")
         ckpt_callback = ModelCheckpoint(filepath=self.dirs.ckpt, save_top_k=-1)
+        early_stop_callback = EarlyStopping(
+            monitor='val_loss',
+            min_delta=0.05,
+            patience=10,
+            verbose=False,
+            mode='max'
+        )
 
         wrapper = Wrapper(
             hparams=self.hparams,
@@ -40,6 +47,7 @@ class Trainer(Base):
 
         trainer = pl.Trainer(
             logger=logger,
+            callbacks=[early_stop_callback],
             checkpoint_callback=ckpt_callback,
             max_epochs=self.hparams.num_epochs,
             gradient_clip_val=self.hparams.clipping,

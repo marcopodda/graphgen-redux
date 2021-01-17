@@ -24,14 +24,16 @@ class Wrapper(pl.LightningModule):
         scheduler = MultiStepLR(optimizer, milestones=self.hparams.milestones)
         return [optimizer], [scheduler]
 
-    def training_step(self, batch, batch_idx):
+    def shared_step(self, batch, batch_idx):
         y_pred, y, lengths = self.model(batch)
         loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
         loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
         return loss
 
-    def validation_step(self, batch, batch_idx):
-        y_pred, y, lengths = self.model(batch)
-        loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
-        loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
+    def training_step(self, batch, batch_idx):
+        loss = self.shared_step(batch, batch_idx)
         return loss
+
+    def validation_step(self, batch, batch_idx):
+        loss = self.shared_step(batch, batch_idx)
+        self.log("val_loss", loss)
