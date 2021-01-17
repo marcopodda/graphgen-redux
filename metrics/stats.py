@@ -38,8 +38,8 @@ def degree_stats(graph_ref_list, graph_pred_list):
     prev = datetime.now()
 
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
-    sample_ref = P(delayed(degree_worker)(G) for G in enumerate(graph_ref_list))
-    sample_pred = P(delayed(degree_worker)(G) for G in enumerate(graph_pred_list))
+    sample_ref = P(delayed(degree_worker)(G) for i, G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(degree_worker)(G) for i, G in enumerate(graph_pred_list))
 
     with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
         for deg_hist in executor.map(degree_worker, graph_ref_list):
@@ -89,8 +89,8 @@ def node_label_stats(graph_ref_list, graph_pred_list):
                 node_map[graph.nodes[u]['label']] = len(node_map)
 
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
-    sample_ref = P(delayed(node_label_worker)(G, node_map) for G in enumerate(graph_ref_list))
-    sample_pred = P(delayed(node_label_worker)(G, node_map) for G in enumerate(graph_pred_list))
+    sample_ref = P(delayed(node_label_worker)(G, node_map) for i, G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(node_label_worker)(G, node_map) for i, G in enumerate(graph_pred_list))
 
     # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
     #     for node_label_hist in executor.map(partial(node_label_worker, node_map=node_map), graph_ref_list):
@@ -142,8 +142,8 @@ def edge_label_stats(graph_ref_list, graph_pred_list):
                 edge_map[graph.edges[u, v]['label']] = len(edge_map)
 
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
-    sample_ref = P(delayed(edge_label_worker)(G, edge_map) for G in enumerate(graph_ref_list))
-    sample_pred = P(delayed(edge_label_worker)(G, edge_map) for G in enumerate(graph_pred_list))
+    sample_ref = P(delayed(edge_label_worker)(G, edge_map) for i, G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(edge_label_worker)(G, edge_map) for i, G in enumerate(graph_pred_list))
 
     # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
     #     for edge_label_hist in executor.map(partial(edge_label_worker, edge_map=edge_map), graph_ref_list):
@@ -177,8 +177,8 @@ def clustering_stats(graph_ref_list, graph_pred_list, bins=100):
 
     prev = datetime.now()
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
-    sample_ref = P(delayed(clustering_worker)(G, bins) for G in enumerate(graph_ref_list))
-    sample_pred = P(delayed(clustering_worker)(G, bins) for G in enumerate(graph_pred_list))
+    sample_ref = P(delayed(clustering_worker)(G, bins) for i, G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(clustering_worker)(G, bins) for i, G in enumerate(graph_pred_list))
 
     # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
     #     for clustering_hist in executor.map(clustering_worker,
@@ -260,8 +260,8 @@ def orbit_stats_all(graph_ref_list, graph_pred_list):
     prev = datetime.now()
 
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
-    total_counts_ref = P(delayed(orbits_counts_worker)(G) for G in enumerate(graph_ref_list))
-    total_counts_pred = P(delayed(orbits_counts_worker)(G) for G in enumerate(graph_pred_list))
+    total_counts_ref = P(delayed(orbits_counts_worker)(G) for i, G in enumerate(graph_ref_list))
+    total_counts_pred = P(delayed(orbits_counts_worker)(G) for i, G in enumerate(graph_pred_list))
 
     # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
     #     for orbit_counts_graph in executor.map(orbits_counts_worker, graph_ref_list):
@@ -312,8 +312,8 @@ def node_label_and_degree_joint_stats(graph_ref_list, graph_pred_list):
                           ['label'])] = len(node_map)
 
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
-    sample_ref = P(delayed(node_label_and_degree_worker)(G, node_map) for G in enumerate(graph_ref_list))
-    sample_pred = P(delayed(node_label_and_degree_worker)(G, node_map) for G in enumerate(graph_pred_list))
+    sample_ref = P(delayed(node_label_and_degree_worker)(G, node_map) for i, G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(node_label_and_degree_worker)(G, node_map) for i, G in enumerate(graph_pred_list))
 
     # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
     #     for node_label_hist in executor.map(partial(
