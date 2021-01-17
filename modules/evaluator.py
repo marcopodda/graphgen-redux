@@ -108,7 +108,7 @@ class Evaluator(Base):
         }
 
         reduced = "_red" if self.reduced else ""
-        filename = self.dirs.eval / f"results{reduced}_{partition}_{epoch:02d}.pkl"
+        filename = self.dirs.eval / f"results{reduced}_{epoch:02d}.pkl"
         save_pickle(results, filename)
 
     def _setup_dirs(self, root_dir):
