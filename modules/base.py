@@ -14,7 +14,10 @@ class Base:
         return cls(**config)
 
     def __init__(self, exp_name, root_dir, dataset_name, reduced, hparams, gpu, debug):
-        self.exp_name = f"{exp_name}_red" if reduced else exp_name
+        if not exp_name.endswith("_red"):
+            exp_name = f"{exp_name}_red" if reduced else exp_name
+
+        self.exp_name = exp_name
         self.dataset_name = dataset_name
         self.reduced = reduced
         self.hparams = HParams.load(hparams)
