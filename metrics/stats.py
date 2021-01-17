@@ -41,12 +41,12 @@ def degree_stats(graph_ref_list, graph_pred_list):
     sample_ref = P(delayed(degree_worker)(G) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(degree_worker)(G) for i, G in enumerate(graph_pred_list))
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for deg_hist in executor.map(degree_worker, graph_ref_list):
-            sample_ref.append(deg_hist)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for deg_hist in executor.map(degree_worker, graph_pred_list):
-            sample_pred.append(deg_hist)
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for deg_hist in executor.map(degree_worker, graph_ref_list):
+    #         sample_ref.append(deg_hist)
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for deg_hist in executor.map(degree_worker, graph_pred_list):
+    #         sample_pred.append(deg_hist)
 
     mmd_dist = mmd.compute_mmd(
         sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
