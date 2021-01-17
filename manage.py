@@ -40,7 +40,7 @@ def command_parser():
     sub_evaluate = sub.add_parser('evaluate', help="evaluate.")
     sub_evaluate.add_argument("--exp-path", help="Experiment path.")
     sub_evaluate.add_argument("--epoch", help="Epoch to evaluate.", type=int)
-    sub_evaluate.add_argument("--partition", default=64, help="Partition.", choices=["val", "test"])
+    sub_evaluate.add_argument("--partition", help="Partition.", choices=["val", "test"], default="test")
     sub_evaluate.set_defaults(command='evaluate')
 
     return parser
