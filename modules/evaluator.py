@@ -33,9 +33,9 @@ def print_stats(
 
 
 class Evaluator(Base):
-    def evaluate(self, partition, epoch):
+    def evaluate(self, epoch):
         indices = self.dataset.indices
-        real_graphs = self.dataset.select_graphs(indices[partition])
+        real_graphs = self.dataset.select_graphs(indices['test'])
 
         reduced = "_red" if self.reduced else ""
         gen_graphs = load_pickle(self.dirs.samples / f"samples_{epoch:02d}{reduced}.pkl")
