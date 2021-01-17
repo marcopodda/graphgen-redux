@@ -25,6 +25,8 @@ class Generator(Base):
 
     def _gen(self, model, mapper, device):
         model = model.eval()
+        model = model.to(device)
+
         dim_ts_out = mapper['max_nodes'] + 1
         dim_vs_out  = len(mapper['node_forward']) + 1
         dim_e_out = len(mapper['edge_forward']) + 1
