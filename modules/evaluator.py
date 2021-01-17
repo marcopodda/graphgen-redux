@@ -50,13 +50,13 @@ class Evaluator(Base):
         degree_mmd, clustering_mmd, orbit_mmd, nspdk_mmd = [], [], [], []
         node_label_mmd, edge_label_mmd, node_label_and_degree = [], [], []
 
-        batch_size = self.hparams.batch_size
-        num_batches = len(gen_graphs) // batch_size
+        num_samples = self.hparams.num_samples
+        num_batches = len(gen_graphs) // num_samples
 
         for i in range(num_batches):
             print(f"Evaluating batch {i+1}")
-            real_sample = random.sample(real_graphs, batch_size)
-            gen_sample = gen_graphs[i*batch_size:i*batch_size+batch_size]
+            real_sample = random.sample(real_graphs, num_samples)
+            gen_sample = gen_graphs[i*num_samples:i*num_samples+num_samples]
 
             node_count_avg_ref.append(mean([len(G.nodes()) for G in real_sample]))
             node_count_avg_pred.append(mean([len(G.nodes()) for G in gen_sample]))
