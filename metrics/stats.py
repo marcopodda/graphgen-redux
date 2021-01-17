@@ -9,9 +9,10 @@ import numpy as np
 import networkx as nx
 
 import metrics.mmd as mmd
+from core.utils import get_n_jobs
 
 PRINT_TIME = True
-MAX_WORKERS = 48
+MAX_WORKERS = get_n_jobs()
 
 
 def degree_worker(G):
@@ -323,51 +324,45 @@ def nspdk_stats(graph_ref_list, graph_pred_list):
     return mmd_dist
 
 
-def write_graphs_from_dir(graphs_path, graphs_indices, outfile):
+def write_graphs(graphs, outfile):
     """
     Write a list of graphs from a directory to file in graph transaction format (used by fsg)
     """
 
     graphs_indices_act = []
     with open(outfile, 'w') as fr:
-        for ind in graphs_indices:
-            with open(graphs_path + 'graph' + str(ind) + '.dat', 'rb') as f:
-                g = pickle.load(f)
+        for i, G in enumerate(graphs):
+            if G.number_of_nodes() < 10:
+                continue
 
-                if g.number_of_nodes() < 10:
-                    continue
+            fr.write(f't\n')
+            for v in G.nodes:
+                v_label = G.nodes[v]['label'].split('-')[0]
+                fr.write(f'v {v} {v_label}\n')
+            for u, v in G.edges:
+                edge_label = G.edges[u, v]['label']
+                fr.write(f'u {u} {v} {edge_label} \n')
 
-                fr.write(f't\n')
-                for v in g.nodes:
-                    v_label = g.nodes[v]['label'].split('-')[0]
-                    fr.write(f'v {v} {v_label}\n')
-                for u, v in g.edges:
-                    edge_label = g.edges[u, v]['label']
-                    fr.write(f'u {u} {v} {edge_label} \n')
-
-                graphs_indices_act.append(ind)
+            graphs_indices_act.append(i)
 
     return graphs_indices_act
 
 
-def novelity(graph_ref_path, graph_ref_indices, graph_pred_path, graph_pred_indices, temp_path, timeout):
+def novelty(real_graphs, gen_graphs, temp_path, timeout):
     pred_fd, pred_path = tempfile.mkstemp(dir=temp_path)
     test_fd, test_path = tempfile.mkstemp(dir=temp_path)
     res_fd, res_path = tempfile.mkstemp(dir=temp_path)
 
-    graph_pred_indices = write_graphs_from_dir(
-        graph_pred_path, graph_pred_indices, pred_path)
-    graph_ref_indices = write_graphs_from_dir(
-        graph_ref_path, graph_ref_indices, test_path)
+    graph_pred_indices = write_graphs(gen_graphs, pred_path)
+    _ = write_graphs(real_graphs, test_path)
 
-    print('Evaluating novelity')
-
-    try:
-        with open(res_path, 'w') as outf:
+    print('Evaluating novelty')
+    with open(res_path, 'w') as outf:
+        try:
             sp.call(['bin/subiso', test_path, pred_path, '0'],
-                    stdout=outf, timeout=timeout)
-    except sp.TimeoutExpired as e:
-        outf.close()
+                stdout=outf, timeout=timeout)
+        except sp.TimeoutExpired as e:
+            pass
 
     with open(res_path, 'r') as outf:
         unique1 = []
@@ -381,12 +376,12 @@ def novelity(graph_ref_path, graph_ref_indices, graph_pred_path, graph_pred_indi
 
     print('{} / {} predicted graphs are not subgraphs of reference graphs'.format(len(unique1), len(calc1)))
 
-    try:
-        with open(res_path, 'w') as outf:
+    with open(res_path, 'w') as outf:
+        try:
             sp.call(['bin/subiso', pred_path, test_path, '1'],
-                    stdout=outf, timeout=timeout)
-    except sp.TimeoutExpired as e:
-        outf.close()
+                stdout=outf, timeout=timeout)
+        except sp.TimeoutExpired as e:
+            pass
 
     with open(res_path, 'r') as outf:
         unique2 = []
@@ -418,19 +413,20 @@ def novelity(graph_ref_path, graph_ref_indices, graph_pred_path, graph_pred_indi
         print(e)
 
 
-def uniqueness(graph_pred_path, graph_pred_indices, temp_path, timeout):
+def uniqueness(gen_graphs, temp_path, timeout):
     pred_fd, pred_path = tempfile.mkstemp(dir=temp_path)
     res_fd, res_path = tempfile.mkstemp(dir=temp_path)
 
-    write_graphs_from_dir(graph_pred_path, graph_pred_indices, pred_path)
+    graph_pred_indices = write_graphs(gen_graphs, pred_path)
 
     print('Evaluating uniqueness')
 
-    try:
-        with open(res_path, 'w') as outf:
+
+    with open(res_path, 'w') as outf:
+        try:
             sp.call(['bin/unique', pred_path], stdout=outf, timeout=timeout)
-    except sp.TimeoutExpired as e:
-        outf.close()
+        except sp.TimeoutExpired as e:
+            pass
 
     with open(res_path, 'r') as outf:
         unique1 = []

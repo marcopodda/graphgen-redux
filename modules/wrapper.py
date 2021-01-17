@@ -13,10 +13,8 @@ class Wrapper(pl.LightningModule):
         super().__init__()
         self.hparams = HParams.load(hparams)
 
-        if reduced:
-            self.model = ReducedModel(hparams, mapper)
-        else:
-            self.model = Model(hparams, mapper)
+        model_class = ReducedModel if reduced else Model
+        self.model = model_class(hparams, mapper)
 
     def forward(self, batch):
         return self.model(batch)
@@ -27,6 +25,12 @@ class Wrapper(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def training_step(self, batch, batch_idx):
+        y_pred, y, lengths = self.model(batch)
+        loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
+        loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
+        return loss
+
+    def validation_step(self, batch, batch_idx):
         y_pred, y, lengths = self.model(batch)
         loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
         loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))

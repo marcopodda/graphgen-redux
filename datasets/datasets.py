@@ -1,10 +1,12 @@
+import numpy as np
 import torch
+from sklearn.model_selection import train_test_split
 
 from core.settings import DATA_DIR
-from core.serialization import load_pickle
+from core.serialization import load_pickle, save_pickle
 
 
-def dfscode_to_tensor(self, dfscode, feature_map):
+def dfscode_to_tensor(dfscode, feature_map):
     max_nodes, max_edges = feature_map['max_nodes'], feature_map['max_edges']
     node_forward_dict, edge_forward_dict = feature_map['node_forward'], feature_map['edge_forward']
     num_nodes_feat, num_edges_feat = len(feature_map['node_forward']), len(feature_map['edge_forward'])
@@ -37,7 +39,7 @@ def dfscode_to_tensor(self, dfscode, feature_map):
     return dfscode_tensors
 
 
-def reduced_dfscode_to_tensor(self, dfscode, feature_map):
+def reduced_dfscode_to_tensor(dfscode, feature_map):
     max_nodes, max_edges = feature_map['max_nodes'], feature_map['max_edges']
     reduced_forward = feature_map['reduced_forward']
     num_nodes_feat = len(feature_map['reduced_forward'])
@@ -64,16 +66,30 @@ def reduced_dfscode_to_tensor(self, dfscode, feature_map):
     return reduced_dfscode_tensors
 
 
-class BaseDataset:
+class Dataset:
     mapper_filename = None
     codes_filename = None
     tensorizer = None
 
-    def __init__(self, name):
+    def __init__(self, name, reduced=True):
         self.name = name
+        self.reduced = reduced
         self.root_dir = DATA_DIR / name
-        self.mapper = load_pickle(self.root_dir / self.mapper_filename)
-        self.codes = load_pickle(self.root_dir / self.codes_filename)
+
+        graphs_filename = self.root_dir / "graphs.pkl"
+        self.graphs = load_pickle(graphs_filename)
+
+        mapper_filename = "reduced_map.dict" if reduced else "map.dict"
+        self.mapper = load_pickle(self.root_dir / mapper_filename)
+
+        codes_filename = "reduced_dfs_codes.pkl" if reduced else "dfs_codes.pkl"
+        self.codes = load_pickle(self.root_dir / codes_filename)
+
+        self.tensorizer = reduced_dfscode_to_tensor if reduced else dfscode_to_tensor
+
+        if not (self.root_dir / "splits.pkl").exists():
+            self._split_dataset()
+        self.indices = load_pickle(self.root_dir / "splits.pkl")
 
     def __len__(self):
         return len(self.codes)
@@ -82,14 +98,12 @@ class BaseDataset:
         code = self.codes[index]
         return self.tensorizer(code, self.mapper)
 
+    def _split_dataset(self):
+        indices = np.arange(len(self.dataset))
+        train_indices, test_indices = train_test_split(indices, test_size=0.1)
+        train_indices, val_indices = train_test_split(train_indices, test_size=0.1)
+        indices = {"train": train_indices.tolist(), "val": val_indices.tolist(), "test": test_indices.tolist()}
+        save_pickle(indices, self.root_dir / "splits.pkl")
 
-class Dataset(BaseDataset):
-    mapper_filename = "map.dict"
-    codes_filename = "dfs_codes.pkl"
-    tensorizer = dfscode_to_tensor
-
-
-class ReducedDataset(BaseDataset):
-    mapper_filename = "reduced_map.dict"
-    codes_filename = "reduced_dfs_codes.pkl"
-    tensorizer = reduced_dfscode_to_tensor
+    def select_graphs(self, indices):
+        return [self.graphs[i] for i in indices]

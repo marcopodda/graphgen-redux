@@ -4,7 +4,9 @@ from pathlib import Path
 from core.settings import DATASETS
 from datasets.create_dataset import create_dataset
 from datasets.preprocess_dataset import preprocess_dataset
-from trainer.trainer import Trainer
+from modules.trainer import Trainer
+from modules.generator import Generator
+from modules.evaluator import Evaluator
 
 
 def command_parser():
@@ -29,23 +31,17 @@ def command_parser():
     sub_train.add_argument("--debug", default=False, action="store_true", help="Debug mode.")
     sub_train.set_defaults(command='train')
 
-    # sub_validate = sub.add_parser('validate', help="Validation.")
-    # sub_validate.add_argument("--exp-path", help="Experiment path.")
-    # sub_validate.add_argument("--epoch", help="Epoch to validate.", type=int)
-    # sub_validate.add_argument("--beam-size", default=64, help="Beam size.", type=int)
-    # sub_validate.add_argument("--batch-size", default=128, help="Batch size.", type=int)
-    # sub_validate.add_argument("--num-samples", default=20, help="Beam size.", type=int)
-    # sub_validate.add_argument("--gpu", default=None, help="GPU number.", type=int)
-    # sub_validate.set_defaults(command='validate')
+    sub_generate = sub.add_parser('generate', help="Generation.")
+    sub_generate.add_argument("--exp-path", help="Experiment path.")
+    sub_generate.add_argument("--epoch", help="Epoch to generate from.", type=int)
+    sub_generate.add_argument("--gpu", default=None, help="GPU number.", type=int)
+    sub_generate.set_defaults(command='generate')
 
-    # sub_test = sub.add_parser('test', help="Test.")
-    # sub_test.add_argument("--exp-path", help="Experiment path.")
-    # sub_test.add_argument("--epoch", help="Epoch to test.", type=int)
-    # sub_test.add_argument("--beam-size", default=64, help="Beam size.", type=int)
-    # sub_test.add_argument("--batch-size", default=128, help="Batch size.", type=int)
-    # sub_test.add_argument("--num-samples", default=20, help="Beam size.", type=int)
-    # sub_test.add_argument("--gpu", default=0, help="GPU number.", type=int)
-    # sub_test.set_defaults(command='test')
+    sub_evaluate = sub.add_parser('evaluate', help="evaluate.")
+    sub_evaluate.add_argument("--exp-path", help="Experiment path.")
+    sub_evaluate.add_argument("--epoch", help="Epoch to evaluate.", type=int)
+    sub_evaluate.add_argument("--partition", default=64, help="Partition.", choices=["val", "test"])
+    sub_evaluate.set_defaults(command='evaluate')
 
     return parser
 
@@ -64,20 +60,10 @@ if __name__ == "__main__":
         trainer = Trainer.from_args(args)
         trainer.train()
 
-    # elif args.command == "validate":
-    #     translator = Translator.load(Path(args.exp_path))
-    #     translator.validate(
-    #         epoch=args.epoch,
-    #         beam_size=args.beam_size,
-    #         batch_size=args.batch_size,
-    #         num_samples=args.num_samples,
-    #         gpu=args.gpu)
+    elif args.command == "generate":
+        generator = Generator.initialize(Path(args.exp_path))
+        generator.generate(epoch=args.epoch, device=args.gpu)
 
-    # elif args.command == "test":
-    #     translator = Translator.load(Path(args.exp_path))
-    #     translator.test(
-    #         epoch=args.epoch,
-    #         beam_size=args.beam_size,
-    #         batch_size=args.batch_size,
-    #         num_samples=args.num_samples,
-    #         gpu=args.gpu)
+    elif args.command == "evaluate":
+        evaluator = Evaluator.initialize(Path(args.exp_path))
+        evaluator.evaluate(partition=args.partition, epoch=args.epoch)
