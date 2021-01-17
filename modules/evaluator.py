@@ -53,6 +53,7 @@ class Evaluator(Base):
         batch_size = self.hparams.batch_size
 
         for i in range(0, len(gen_graphs), batch_size):
+            print(f"Evaluating run {i+1}")
             real_sample = random.sample(real_graphs, batch_size)
             gen_sample = gen_graphs[i:i+batch_size]
 
