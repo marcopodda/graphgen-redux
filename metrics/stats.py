@@ -11,6 +11,8 @@ import networkx as nx
 import metrics.mmd as mmd
 from core.utils import get_n_jobs
 
+from joblib import Parallel, delayed
+
 PRINT_TIME = True
 MAX_WORKERS = get_n_jobs()
 
@@ -82,12 +84,16 @@ def node_label_stats(graph_ref_list, graph_pred_list):
             if graph.nodes[u]['label'] not in node_map:
                 node_map[graph.nodes[u]['label']] = len(node_map)
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for node_label_hist in executor.map(partial(node_label_worker, node_map=node_map), graph_ref_list):
-            sample_ref.append(node_label_hist)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for node_label_hist in executor.map(partial(node_label_worker, node_map=node_map), graph_pred_list):
-            sample_pred.append(node_label_hist)
+    P = Parallel(n_jobs=get_n_jobs(), verbose=1)
+    sample_ref = P(delayed(clustering_worker)(G, node_map) for G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(clustering_worker)(G, node_map) for G in enumerate(graph_pred_list))
+
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for node_label_hist in executor.map(partial(node_label_worker, node_map=node_map), graph_ref_list):
+    #         sample_ref.append(node_label_hist)
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for node_label_hist in executor.map(partial(node_label_worker, node_map=node_map), graph_pred_list):
+    #         sample_pred.append(node_label_hist)
 
     mmd_dist = mmd.compute_mmd(
         sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
@@ -131,12 +137,16 @@ def edge_label_stats(graph_ref_list, graph_pred_list):
             if graph.edges[u, v]['label'] not in edge_map:
                 edge_map[graph.edges[u, v]['label']] = len(edge_map)
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for edge_label_hist in executor.map(partial(edge_label_worker, edge_map=edge_map), graph_ref_list):
-            sample_ref.append(edge_label_hist)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for edge_label_hist in executor.map(partial(edge_label_worker, edge_map=edge_map), graph_pred_list):
-            sample_pred.append(edge_label_hist)
+    P = Parallel(n_jobs=get_n_jobs(), verbose=1)
+    sample_ref = P(delayed(clustering_worker)(G, edge_map) for G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(clustering_worker)(G, edge_map) for G in enumerate(graph_pred_list))
+
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for edge_label_hist in executor.map(partial(edge_label_worker, edge_map=edge_map), graph_ref_list):
+    #         sample_ref.append(edge_label_hist)
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for edge_label_hist in executor.map(partial(edge_label_worker, edge_map=edge_map), graph_pred_list):
+    #         sample_pred.append(edge_label_hist)
 
     mmd_dist = mmd.compute_mmd(
         sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
@@ -148,8 +158,7 @@ def edge_label_stats(graph_ref_list, graph_pred_list):
     return mmd_dist
 
 
-def clustering_worker(param):
-    G, bins = param
+def clustering_worker(G, bins):
     clustering_coeffs_list = list(nx.clustering(G).values())
     hist, _ = np.histogram(
         clustering_coeffs_list, bins=bins, range=(0.0, 1.0), density=False)
@@ -163,15 +172,19 @@ def clustering_stats(graph_ref_list, graph_pred_list, bins=100):
         G for G in graph_pred_list if not G.number_of_nodes() == 0]
 
     prev = datetime.now()
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for clustering_hist in executor.map(clustering_worker,
-                                            [(G, bins) for G in graph_ref_list]):
-            sample_ref.append(clustering_hist)
+    P = Parallel(n_jobs=get_n_jobs(), verbose=1)
+    sample_ref = P(delayed(clustering_worker)(G, bins) for G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(clustering_worker)(G, bins) for G in enumerate(graph_pred_list))
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for clustering_hist in executor.map(clustering_worker,
-                                            [(G, bins) for G in graph_pred_list]):
-            sample_pred.append(clustering_hist)
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for clustering_hist in executor.map(clustering_worker,
+    #                                         [(G, bins) for G in graph_ref_list]):
+    #         sample_ref.append(clustering_hist)
+
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for clustering_hist in executor.map(clustering_worker,
+    #                                         [(G, bins) for G in graph_pred_list]):
+    #         sample_pred.append(clustering_hist)
 
     mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, metric=partial(
         mmd.gaussian_emd, sigma=0.1, distance_scaling=bins), n_jobs=MAX_WORKERS)
@@ -289,14 +302,18 @@ def node_label_and_degree_joint_stats(graph_ref_list, graph_pred_list):
                 node_map[(graph.degree[u], graph.nodes[u]
                           ['label'])] = len(node_map)
 
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for node_label_hist in executor.map(partial(
-                node_label_and_degree_worker, node_map=node_map), graph_ref_list):
-            sample_ref.append(node_label_hist)
-    with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
-        for node_label_hist in executor.map(partial(
-                node_label_and_degree_worker, node_map=node_map), graph_pred_list):
-            sample_pred.append(node_label_hist)
+    P = Parallel(n_jobs=get_n_jobs(), verbose=1)
+    sample_ref = P(delayed(clustering_worker)(G, node_map) for G in enumerate(graph_ref_list))
+    sample_pred = P(delayed(clustering_worker)(G, node_map) for G in enumerate(graph_pred_list))
+
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for node_label_hist in executor.map(partial(
+    #             node_label_and_degree_worker, node_map=node_map), graph_ref_list):
+    #         sample_ref.append(node_label_hist)
+    # with concurrent.futures.ProcessPoolExecutor(max_workers=MAX_WORKERS) as executor:
+    #     for node_label_hist in executor.map(partial(
+    #             node_label_and_degree_worker, node_map=node_map), graph_pred_list):
+    #         sample_pred.append(node_label_hist)
 
     mmd_dist = mmd.compute_mmd(
         sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)

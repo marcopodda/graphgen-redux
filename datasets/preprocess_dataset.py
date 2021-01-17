@@ -9,7 +9,6 @@ from core.serialization import load_pickle, save_pickle
 from core.settings import DATA_DIR, BIN_DIR
 
 
-
 def get_min_dfscode(idx, G, temp_path=tempfile.gettempdir()):
     input_fd, input_path = tempfile.mkstemp(dir=temp_path)
 
