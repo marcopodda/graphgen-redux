@@ -41,8 +41,8 @@ class Evaluator(Base):
         gen_graphs = load_pickle(self.dirs.samples / f"samples_{epoch:02d}{reduced}.pkl")
         tmp_dir = "."
 
-        stats.novelty(real_graphs, gen_graphs, tmp_dir, timeout=60)
-        stats.uniqueness(gen_graphs, tmp_dir, timeout=120)
+        # novelty_score = stats.novelty(real_graphs, gen_graphs, tmp_dir, timeout=60)
+        # uniqueness_score = stats.uniqueness(gen_graphs, tmp_dir, timeout=120)
 
         node_count_avg_ref, node_count_avg_pred = [], []
         edge_count_avg_ref, edge_count_avg_pred = [], []
@@ -81,6 +81,8 @@ class Evaluator(Base):
         )
 
         results = {
+            # "Novelty": novelty_score,
+            # "Uniqueness": uniqueness_score,
             "Node count avg. ref": node_count_avg_ref,
             "Node count avg. pred": node_count_avg_pred,
             "Edge count avg. ref": edge_count_avg_ref,
