@@ -112,7 +112,7 @@ class Model(nn.Module):
             # put count_temp of them in x_edge_len each with value min(i, max_prev_node + 1)
             x_edge_len.extend([min(i, self.max_prev_node + 1)] * count_temp)
 
-        x_edge_len = torch.LongTensor(x_edge_len, device=x.device)
+        x_edge_len = torch.tensor(x_edge_len, device=x.device)
 
         # Get edge-level RNN hidden state from node-level RNN output at each timestamp
         # Ignore the last hidden state corresponding to END
