@@ -434,13 +434,13 @@ class Model(nn.Module):
         self.g_active = list(range(batch_size))
 
         for i in range(batch_size):
-            g = dgl.DGLGraph()
+            g = dgl.DGLGraph().to(self.device)
             g.index = i
 
             # If there are some features for nodes and edges,
             # zero tensors will be set for those of new nodes and edges.
-            g.set_n_initializer(dgl.frame.zero_initializer, ctx=self.device)
-            g.set_e_initializer(dgl.frame.zero_initializer, ctx=self.device)
+            g.set_n_initializer(dgl.frame.zero_initializer)
+            g.set_e_initializer(dgl.frame.zero_initializer)
 
             self.g_list.append(g)
 
