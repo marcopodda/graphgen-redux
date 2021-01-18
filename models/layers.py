@@ -105,7 +105,7 @@ class SoftmaxMLP(nn.Module):
             nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Linear(hidden_size, output_size),
-            nn.Softmax(dim=2))
+            nn.Softmax(dim=-1))
 
         for m in self.modules():
             if isinstance(m, nn.Linear):

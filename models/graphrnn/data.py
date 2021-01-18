@@ -68,25 +68,25 @@ def get_random_bfs_seq(graph):
     return [perm[bfs_seq[i]] for i in range(n)]
 
 
-def graph_to_matrix(graph, mapper):
+def graph_to_matrix(G, mapper):
     """
     Method for converting graph to a 2d feature matrix
-    :param graph: Networkx graph object
+    :param G: Networkx graph object
     :param node_map: Node label to integer mapping
     :param edge_map: Edge label to integer mapping
     :param max_prev_node: Number of previous nodes to consider for edge prediction
     :param max_head_and_tail: Head and tail of adjacency vector to consider for edge prediction
     :random_bfs: Whether or not to do random_bfs
     """
-    n = len(graph.nodes())
+    n = len(G.nodes())
     len_node_map = len(mapper['node_forward'])
     len_edge_map = len(mapper['edge_forward'])
     len_node_vec = len_node_map + 2
     max_prev_node = mapper['max_prev_node']
 
-    bfs_seq = get_random_bfs_seq(graph)
+    bfs_seq = get_random_bfs_seq(G)
     bfs_order_map = {bfs_seq[i]: i for i in range(n)}
-    graph = nx.relabel_nodes(graph, bfs_order_map)
+    G = nx.relabel_nodes(G, bfs_order_map)
 
     # 3D adjacecny matrix in case of edge_features (each A[i, j] is a len_edge_vec size vector)
     adj_mat_2d = torch.ones((n, max_prev_node))
@@ -95,11 +95,11 @@ def graph_to_matrix(graph, mapper):
 
     node_mat = torch.zeros((n, len_node_vec))
 
-    for v, data in graph.nodes.data():
+    for v, data in G.nodes.data():
         ind = mapper['node_forward'][data['label']]
         node_mat[v, ind] = 1
 
-    for u, v, data in graph.edges.data():
+    for u, v, data in G.edges.data():
         if abs(u - v) <= max_prev_node:
             elabel =  mapper['edge_forward'][data['label']]
             adj_mat_3d[max(u, v), max(u, v) - min(u, v) - 1, elabel] = 1
