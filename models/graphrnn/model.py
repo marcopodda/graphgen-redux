@@ -145,14 +145,15 @@ class Model(nn.Module):
         # Loss evaluation & backprop
         zeros = torch.zeros(batch_size, 1, self.len_node_vec, device=x.device)
         x_node = torch.cat([x[:, :, :self.len_node_vec], zeros], dim=1)
-        x_node[torch.arange(batch_size), x_len, self.len_node_vec - 1] = 1
+        x_node[:, x_len, self.len_node_vec - 1] = 1
 
         zeros = torch.zeros(sum(x_len), 1, self.len_edge_vec, device=x.device)
         x_edge = torch.cat([edge_mat, zeros], dim=1)
         x_edge[:, x_edge_len - 1, self.len_edge_vec - 1] = 1
 
-        loss1 = F.binary_cross_entropy(x_pred_node, x_node, reduction='sum')
-        loss2 = F.binary_cross_entropy(x_pred_edge, x_edge, reduction='sum')
+        print(x_pred_node.size(), x_node.size(), x_pred_edge.size(), x_edge.size())
+        loss1 = F.binary_cross_entropy(x_pred_node.reshape(-1), x_node.reshape(-1), reduction='sum')
+        loss2 = F.binary_cross_entropy(x_pred_edge.reshape(-1), x_edge.reshape(-1), reduction='sum')
 
         # Avg (node prediction + edge prediction) error per example
         loss = (loss1 + loss2) / batch_size

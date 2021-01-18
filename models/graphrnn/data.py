@@ -2,7 +2,7 @@ import networkx as nx
 import torch
 from joblib import Parallel, delayed
 
-from core.utils import get_n_jobs
+from core.utils import get_n_jobs, flatten
 from core.serialization import load_pickle, save_pickle
 from models.data import BaseDataset, BaseLoader
 
@@ -29,8 +29,8 @@ def calc_max_prev_node(graphs):
     """
     P = Parallel(n_jobs=get_n_jobs(), verbose=1)
     max_prev_node = P(delayed(calc_max_prev_node_helper)(G) for G in graphs)
-    max_prev_node = sorted(max_prev_node)[-1 * int(0.001 * len(max_prev_node))]
-    return max(max_prev_node)
+    max_prev_node = flatten(max_prev_node)
+    return sorted(max_prev_node)[-1 * int(0.001 * len(max_prev_node))]
 
 
 def get_bfs_seq(G, start_id):
