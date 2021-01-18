@@ -6,6 +6,7 @@ from eden.graph import vectorize
 
 
 def emd(x, y, distance_scaling=1.0):
+    # print("computing emd")
     support_size = max(len(x), len(y))
     d_mat = toeplitz(range(support_size)).astype(np.float)
     distance_mat = d_mat / distance_scaling
@@ -21,7 +22,7 @@ def gaussian_emd(x, y, sigma=1.0, distance_scaling=1.0):
     x, y: 1D pmf of two distributions with the same support
     sigma: standard deviation
     """
-
+    # print("computing gaussian emd")
     # Calculate emd
     emd_val = emd(x, y, distance_scaling=distance_scaling)
 
@@ -29,12 +30,13 @@ def gaussian_emd(x, y, sigma=1.0, distance_scaling=1.0):
 
 
 def gaussian(x, y, sigma=1.0):
+    # print("computing gaussian")
     dist = np.linalg.norm(x - y, 2)
     return np.exp(-1 * dist * dist / (2 * sigma * sigma))
 
 
 def kernel_compute(X, Y=None, is_hist=True, metric='linear', n_jobs=None):
-
+    # print("computing kernel")
     def preprocess(X, max_len, is_hist):
         X_p = np.zeros((len(X), max_len))
         for i in range(len(X)):
@@ -63,7 +65,7 @@ def kernel_compute(X, Y=None, is_hist=True, metric='linear', n_jobs=None):
 
         if Y is not None:
             Y = preprocess(Y, max_len, is_hist)
-
+        print("-------------------", n_jobs)
         return pairwise_kernels(X, Y, metric=metric, n_jobs=n_jobs)
 
 
@@ -73,7 +75,7 @@ def compute_mmd(samples1, samples2, metric, is_hist=True, n_jobs=None):
     """
 
     # print('Compute_mmd', inspect.ArgSpec(compute_mmd))
-
+    # print("-----------------------", len(samples1), len(samples2))
     X = kernel_compute(samples1, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
     Y = kernel_compute(samples2, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
     Z = kernel_compute(samples1, Y=samples2, is_hist=is_hist, metric=metric, n_jobs=n_jobs)
