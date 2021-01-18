@@ -68,18 +68,16 @@ class GraphEmbed(nn.Module):
             nn.Linear(node_hidden_size, 1),
             nn.Sigmoid()
         )
-        self.node_to_graph = nn.Linear(
-            node_hidden_size, self.graph_hidden_size)
+        self.node_to_graph = nn.Linear(node_hidden_size, self.graph_hidden_size)
+        self.device = next(self.parameters()).device
 
     def forward(self, g_list):
         # With our current batched implementation of DGMG, new nodes
         # are not added for any graph until all graphs are done with
         # adding edges starting from the last node. Therefore all graphs
         # in the graph_list should have the same number of nodes.
-        device = next(self.parameters()).device
-
         if g_list[0].number_of_nodes() == 0:
-            return torch.zeros(len(g_list), self.graph_hidden_size, device=device)
+            return torch.zeros(len(g_list), self.graph_hidden_size, device=self.device)
 
         bg = dgl.batch(g_list)
         bhv = bg.ndata['hv']
@@ -114,6 +112,7 @@ class GraphProp(nn.Module):
 
         self.message_funcs = nn.ModuleList(message_funcs)
         self.node_update_funcs = nn.ModuleList(node_update_funcs)
+        self.device = next(self.parameters()).device
 
     def dgmg_msg(self, edges):
         """
@@ -126,8 +125,7 @@ class GraphProp(nn.Module):
     def dgmg_reduce(self, nodes, round):
         hv_old = nodes.data['hv']
         m = nodes.mailbox['m']
-        message = torch.cat([
-            hv_old.unsqueeze(1).expand(-1, m.size(1), -1), m], dim=2)
+        message = torch.cat([hv_old.unsqueeze(1).expand(-1, m.size(1), -1), m], dim=2)
         node_activation = (self.message_funcs[round](message)).sum(1)
 
         return {'a': node_activation}
@@ -140,10 +138,8 @@ class GraphProp(nn.Module):
             return
         else:
             for t in range(self.num_prop_rounds):
-                bg.update_all(message_func=self.dgmg_msg,
-                              reduce_func=self.reduce_funcs[t])
-                bg.ndata['hv'] = self.node_update_funcs[t](
-                    bg.ndata['a'], bg.ndata['hv'])
+                bg.update_all(message_func=self.dgmg_msg, reduce_func=self.reduce_funcs[t])
+                bg.ndata['hv'] = self.node_update_funcs[t](bg.ndata['a'], bg.ndata['hv'])
 
         return dgl.unbatch(bg)
 
@@ -167,27 +163,21 @@ class AddNode(nn.Module):
         self.graph_op = {'embed': graph_embed_func}
 
         self.stop = 0
-        self.add_node = nn.Linear(
-            graph_embed_func.graph_hidden_size, 1 + num_node_types)
+        self.add_node = nn.Linear(graph_embed_func.graph_hidden_size, 1 + num_node_types)
         self.dropout = nn.Dropout(p=dropout_prob)
 
         # If to add a node, initialize its hv
-        self.node_type_embed = nn.Embedding(
-            1 + num_node_types, node_hidden_size)
-        self.initialize_hv = nn.Linear(node_hidden_size +
-                                       graph_embed_func.graph_hidden_size,
-                                       node_hidden_size)
+        self.node_type_embed = nn.Embedding(1 + num_node_types, node_hidden_size)
+        self.initialize_hv = nn.Linear(node_hidden_size + graph_embed_func.graph_hidden_size, node_hidden_size)
 
-        device = next(self.parameters()).device
-        self.init_node_activation = torch.zeros(1, 2 * self.node_hidden_size, device=device)
+        self.device = next(self.parameters()).device
+        self.init_node_activation = torch.zeros(1, 2 * self.node_hidden_size, device=self.device)
 
     def _initialize_node_repr(self, g, node_type, graph_embed):
         num_nodes = g.number_of_nodes()
-        hv_init = self.initialize_hv(
-            torch.cat([
-                self.node_type_embed(torch.LongTensor(
-                    [node_type]).to(device=graph_embed.device)),
-                graph_embed], dim=1))
+        t = torch.LongTensor([node_type], device=self.device)
+        init_vec = torch.cat([self.node_type_embed(t), graph_embed], dim=1)
+        hv_init = self.initialize_hv(init_vec)
         g.nodes[num_nodes - 1].data['hv'] = hv_init
         g.nodes[num_nodes - 1].data['a'] = self.init_node_activation
         g.nodes[num_nodes - 1].data['label'] = torch.LongTensor([[node_type]])
@@ -243,12 +233,11 @@ class AddNode(nn.Module):
             if not stop:
                 g_non_stop.append(g.index)
                 g.add_nodes(1)
-                self._initialize_node_repr(g, action,
-                                           batch_graph_embed[i:i + 1, :])
+                self._initialize_node_repr(g, action, batch_graph_embed[i:i + 1, :])
 
         if training:
-            self.log_prob.append(batch_log_prob.gather(dim=1,
-                                                       index=torch.tensor(a, device=batch_log_prob.device).unsqueeze(dim=1)))
+            t = torch.tensor(a, device=self.device).unsqueeze(dim=1)
+            self.log_prob.append(batch_log_prob.gather(dim=1, index=t))
 
         return g_non_stop
 
@@ -258,9 +247,9 @@ class AddEdge(nn.Module):
         super(AddEdge, self).__init__()
 
         self.graph_op = {'embed': graph_embed_func}
-        self.add_edge = nn.Linear(graph_embed_func.graph_hidden_size +
-                                  node_hidden_size, 1)
+        self.add_edge = nn.Linear(graph_embed_func.graph_hidden_size + node_hidden_size, 1)
         self.dropout = nn.Dropout(p=dropout_prob)
+        self.device = next(self.parameters()).device
 
     def prepare_training(self):
         """
@@ -298,10 +287,10 @@ class AddEdge(nn.Module):
         g_to_add_edge = []
 
         batch_graph_embed = self.graph_op['embed'](g_list)
-        batch_src_embed = torch.cat([g.nodes[g.number_of_nodes() - 1].data['hv']
-                                     for g in g_list], dim=0)
-        batch_logit = self.add_edge(self.dropout(torch.cat([batch_graph_embed,
-                                                            batch_src_embed], dim=1)))
+        src = [g.nodes[g.number_of_nodes() - 1].data['hv'] for g in g_list]
+        batch_src_embed = torch.cat(src, dim=0)
+        inputs = torch.cat([batch_graph_embed, batch_src_embed], dim=1)
+        batch_logit = self.add_edge(self.dropout(inputs))
         batch_log_prob = F.logsigmoid(batch_logit)
 
         if not training:
@@ -314,8 +303,7 @@ class AddEdge(nn.Module):
                 g_to_add_edge.append(g.index)
 
         if training:
-            sample_log_prob = bernoulli_action_log_prob(
-                batch_logit, a, batch_log_prob.device)
+            sample_log_prob = bernoulli_action_log_prob(batch_logit, a, self.device)
             self.log_prob.append(sample_log_prob)
 
         return g_to_add_edge
@@ -330,14 +318,13 @@ class ChooseDestAndUpdate(nn.Module):
 
         self.choose_dest = nn.Linear(2 * node_hidden_size, num_edge_types)
         self.dropout = nn.Dropout(p=dropout_prob)
+        self.device = next(self.parameters()).device
 
     def _initialize_edge_repr(self, g, src_list, dest_list, edge_types):
         # For multiple edge types, we use an embedding module.
-        device = next(self.parameters()).device
-        edge_repr = self.edge_type_embed(torch.LongTensor(edge_types, device=device))
+        edge_repr = self.edge_type_embed(torch.LongTensor(edge_types, device=self.device))
         g.edges[src_list, dest_list].data['he'] = edge_repr
-        g.edges[src_list, dest_list].data['label'] = torch.LongTensor(
-            edge_types).unsqueeze(1)
+        g.edges[src_list, dest_list].data['label'] = torch.LongTensor(edge_types).unsqueeze(1)
 
     def prepare_training(self):
         """
@@ -373,10 +360,8 @@ class ChooseDestAndUpdate(nn.Module):
 
             src_embed_expand = g.nodes[src].data['hv'].expand(src, -1)
             possible_dests_embed = g.nodes[possible_dests].data['hv']
-
-            dests_scores = self.choose_dest(self.dropout(
-                torch.cat([possible_dests_embed,
-                           src_embed_expand], dim=1))).view(1, -1)
+            dest = torch.cat([possible_dests_embed,src_embed_expand])
+            dests_scores = self.choose_dest(self.dropout(dest, dim=1)).view(1, -1)
             dests_log_probs = F.log_softmax(dests_scores, dim=1)
 
             if not training:
@@ -400,8 +385,8 @@ class ChooseDestAndUpdate(nn.Module):
 
             if training:
                 if dests_log_probs.nelement() > 1:
-                    self.log_prob.append(
-                        F.log_softmax(dests_scores, dim=1)[:, dest_enc: dest_enc + 1])
+                    log_probs = F.log_softmax(dests_scores, dim=1)[:, dest_enc: dest_enc + 1]
+                    self.log_prob.append(log_probs)
 
 
 class Model(nn.Module):
@@ -423,9 +408,7 @@ class Model(nn.Module):
         self.graph_prop = GraphProp(self.num_prop_rounds, self.node_hidden_size)
 
         # Actions
-        self.add_node_agent = AddNode(
-            self.graph_embed, self.node_hidden_size, self.num_node_types, self.dropout_prob)
-
+        self.add_node_agent = AddNode(self.graph_embed, self.node_hidden_size, self.num_node_types, self.dropout_prob)
         self.add_edge_agent = AddEdge(self.graph_embed, self.node_hidden_size, self.dropout_prob)
         self.choose_dest_agent = ChooseDestAndUpdate(self.node_hidden_size, self.num_edge_types, self.dropout_prob)
 
@@ -560,9 +543,9 @@ class Model(nn.Module):
             self.g_list[g.index] = g
 
     def get_log_prob(self):
-        log_prob = torch.cat(self.add_node_agent.log_prob).sum()\
-            + torch.cat(self.add_edge_agent.log_prob).sum()\
-            + torch.cat(self.choose_dest_agent.log_prob).sum()
+        log_prob = (torch.cat(self.add_node_agent.log_prob).sum() +
+            torch.cat(self.add_edge_agent.log_prob).sum() +
+            torch.cat(self.choose_dest_agent.log_prob).sum())
 
         return log_prob
 
@@ -586,18 +569,14 @@ class Model(nn.Module):
 
         # Some graphs haven't been completely generated.
         while not stop:
-            to_add_edge = self.add_edge_or_not(
-                training=True, a=self.get_actions('edge'))
+            to_add_edge = self.add_edge_or_not(training=True, a=self.get_actions('edge'))
 
             # Some graphs need more edges to be added for the latest node.
             while to_add_edge:
-                self.choose_dest_and_update(
-                    training=True, a=self.get_actions('edge'))
-                to_add_edge = self.add_edge_or_not(
-                    training=True, a=self.get_actions('edge'))
+                self.choose_dest_and_update(training=True, a=self.get_actions('edge'))
+                to_add_edge = self.add_edge_or_not(training=True, a=self.get_actions('edge'))
 
-            stop = self.add_node_and_update(
-                training=True, a=self.get_actions('node'))
+            stop = self.add_node_and_update(training=True, a=self.get_actions('node'))
 
         return self.get_log_prob()
 
@@ -613,8 +592,7 @@ class Model(nn.Module):
 
         # Some graphs haven't been completely generated and their numbers of
         # nodes do not exceed the limit of self.v_max.
-        while (not stop) and (self.g_list[self.g_active[0]].number_of_nodes()
-                              < self.v_max + 1):
+        while (not stop) and (self.g_list[self.g_active[0]].number_of_nodes() < self.v_max + 1):
             num_trials = 0
             to_add_edge = self.add_edge_or_not(training=False)
 
@@ -622,8 +600,7 @@ class Model(nn.Module):
             # the number of trials does not exceed the number of maximum possible
             # edges. Note that this limit on the number of edges eliminate the
             # possibility of multi-graph and one may want to remove it.
-            while to_add_edge and (num_trials <
-                                   self.g_list[self.g_active[0]].number_of_nodes() - 1):
+            while to_add_edge and (num_trials < self.g_list[self.g_active[0]].number_of_nodes() - 1):
                 self.choose_dest_and_update(training=False)
                 num_trials += 1
                 to_add_edge = self.add_edge_or_not(training=False)
