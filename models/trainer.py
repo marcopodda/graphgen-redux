@@ -14,12 +14,16 @@ from core.utils import get_or_create_dir, time_elapsed
 
 
 class TimeElapsedCallback(Callback):
+    def __init__(self, log_dir):
+        super().__init__()
+        self.log_dir = log_dir
+
     def on_train_start(self, trainer, pl_module):
         self.start_time = time.time()
 
     def on_train_end(self, trainer, pl_module):
         elapsed = time_elapsed(time.time(), self.start_time)
-        path = trainer.dirs.logs / "time_elapsed.txt"
+        path = self.log_dir / "time_elapsed.txt"
         with open(path, "r") as f:
             print(f"Time elapsed: {elapsed}", file=f)
 
@@ -49,7 +53,7 @@ class Trainer(BaseModule):
     def train(self):
         logger = TensorBoardLogger(save_dir=self.dirs.exp, name="", version="logs")
         ckpt_callback = ModelCheckpoint(filepath=self.dirs.ckpt, save_top_k=-1)
-        time_elapsed_callback = TimeElapsedCallback()
+        time_elapsed_callback = TimeElapsedCallback(log_dir=self.dirs.logs)
 
         early_stop_callback = EarlyStopping(
             monitor='val_loss',
