@@ -57,7 +57,7 @@ def dgmg_message_weight_init(m):
 
 
 class GraphEmbed(nn.Module):
-    def __init__(self, node_hidden_size):
+    def __init__(self, node_hidden_size, device):
         super(GraphEmbed, self).__init__()
 
         # Setting from the paper
@@ -69,7 +69,7 @@ class GraphEmbed(nn.Module):
             nn.Sigmoid()
         )
         self.node_to_graph = nn.Linear(node_hidden_size, self.graph_hidden_size)
-        self.device = next(self.parameters()).device
+        self.device = device
 
     def forward(self, g_list):
         # With our current batched implementation of DGMG, new nodes
@@ -87,7 +87,7 @@ class GraphEmbed(nn.Module):
 
 
 class GraphProp(nn.Module):
-    def __init__(self, num_prop_rounds, node_hidden_size):
+    def __init__(self, num_prop_rounds, node_hidden_size, device):
         super(GraphProp, self).__init__()
 
         self.num_prop_rounds = num_prop_rounds
@@ -112,7 +112,7 @@ class GraphProp(nn.Module):
 
         self.message_funcs = nn.ModuleList(message_funcs)
         self.node_update_funcs = nn.ModuleList(node_update_funcs)
-        self.device = next(self.parameters()).device
+        self.device = device
 
     def dgmg_msg(self, edges):
         """
@@ -155,7 +155,7 @@ def bernoulli_action_log_prob(logit, action, device):
 
 
 class AddNode(nn.Module):
-    def __init__(self, graph_embed_func, node_hidden_size, num_node_types, dropout_prob):
+    def __init__(self, graph_embed_func, node_hidden_size, num_node_types, dropout_prob, device):
         super(AddNode, self).__init__()
 
         self.node_hidden_size = node_hidden_size
@@ -170,13 +170,12 @@ class AddNode(nn.Module):
         self.node_type_embed = nn.Embedding(1 + num_node_types, node_hidden_size)
         self.initialize_hv = nn.Linear(node_hidden_size + graph_embed_func.graph_hidden_size, node_hidden_size)
 
-        self.device = next(self.parameters()).device
+        self.device = device
         self.init_node_activation = torch.zeros(1, 2 * self.node_hidden_size, device=self.device)
 
     def _initialize_node_repr(self, g, node_type, graph_embed):
         num_nodes = g.number_of_nodes()
         t = torch.LongTensor([node_type], device=self.device)
-        print(t.device, graph_embed.device)
         init_vec = torch.cat([self.node_type_embed(t), graph_embed], dim=1)
         hv_init = self.initialize_hv(init_vec)
         g.nodes[num_nodes - 1].data['hv'] = hv_init
@@ -244,13 +243,13 @@ class AddNode(nn.Module):
 
 
 class AddEdge(nn.Module):
-    def __init__(self, graph_embed_func, node_hidden_size, dropout_prob,):
+    def __init__(self, graph_embed_func, node_hidden_size, dropout_prob, device):
         super(AddEdge, self).__init__()
 
         self.graph_op = {'embed': graph_embed_func}
         self.add_edge = nn.Linear(graph_embed_func.graph_hidden_size + node_hidden_size, 1)
         self.dropout = nn.Dropout(p=dropout_prob)
-        self.device = next(self.parameters()).device
+        self.device = device
 
     def prepare_training(self):
         """
@@ -311,7 +310,7 @@ class AddEdge(nn.Module):
 
 
 class ChooseDestAndUpdate(nn.Module):
-    def __init__(self, node_hidden_size, num_edge_types, dropout_prob):
+    def __init__(self, node_hidden_size, num_edge_types, dropout_prob, device):
         super(ChooseDestAndUpdate, self).__init__()
 
         self.num_edge_types = num_edge_types
@@ -319,7 +318,7 @@ class ChooseDestAndUpdate(nn.Module):
 
         self.choose_dest = nn.Linear(2 * node_hidden_size, num_edge_types)
         self.dropout = nn.Dropout(p=dropout_prob)
-        self.device = next(self.parameters()).device
+        self.device = device
 
     def _initialize_edge_repr(self, g, src_list, dest_list, edge_types):
         # For multiple edge types, we use an embedding module.
@@ -402,20 +401,23 @@ class Model(nn.Module):
         self.num_edge_types = len(mapper['edge_forward'])
         self.dropout_prob = hparams.dropout
 
+        self.device = next(self.parameters()).device
+        print("-------------device------------", self.device)
+
         # Graph embedding module
-        self.graph_embed = GraphEmbed(self.node_hidden_size)
+        self.graph_embed = GraphEmbed(self.node_hidden_size, device=self.device)
 
         # Graph propagation module
-        self.graph_prop = GraphProp(self.num_prop_rounds, self.node_hidden_size)
+        self.graph_prop = GraphProp(self.num_prop_rounds, self.node_hidden_size, device=self.device)
 
         # Actions
-        self.add_node_agent = AddNode(self.graph_embed, self.node_hidden_size, self.num_node_types, self.dropout_prob)
-        self.add_edge_agent = AddEdge(self.graph_embed, self.node_hidden_size, self.dropout_prob)
-        self.choose_dest_agent = ChooseDestAndUpdate(self.node_hidden_size, self.num_edge_types, self.dropout_prob)
+        self.add_node_agent = AddNode(self.graph_embed, self.node_hidden_size, self.num_node_types, self.dropout_prob, device=self.device)
+        self.add_edge_agent = AddEdge(self.graph_embed, self.node_hidden_size, self.dropout_prob, device=self.device)
+        self.choose_dest_agent = ChooseDestAndUpdate(self.node_hidden_size, self.num_edge_types, self.dropout_prob, device=self.device)
 
         # Weight initialization
         self.init_weights()
-        self.device = next(self.parameters()).device
+
 
     def init_weights(self):
         self.graph_embed.apply(weights_init)
