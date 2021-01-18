@@ -401,7 +401,7 @@ class Model(nn.Module):
         self.num_node_types = len(mapper['node_forward'])
         self.num_edge_types = len(mapper['edge_forward'])
         self.dropout_prob = hparams.dropout
-        self.device = "cuda:0"
+        self.device = f"cuda:{hparams.gpu}"
 
         # Graph embedding module
         self.graph_embed = GraphEmbed(self.node_hidden_size, device=self.device)
