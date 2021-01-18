@@ -87,7 +87,7 @@ class Model(nn.Module):
 
         # Time stamp 'i' corresponds to edge feature sequence of length i (including start token added later)
         # Reverse the matrix in dim 0 (for packing purposes)
-        idx = torch.LongTensor([i for i in range(edge_mat.size(0) - 1, -1, -1)], device=x.device)
+        idx = torch.tensor([i for i in range(edge_mat.size(0) - 1, -1, -1)], dtype=torch.long, device=x.device)
         edge_mat = edge_mat.index_select(0, idx)
 
         # Start token of edge level RNN is 1 at second last position in vector of length len_edge_vector
