@@ -449,7 +449,7 @@ class Model(nn.Module):
         self.g_active = list(range(batch_size))
 
         for i in range(batch_size):
-            g = dgl.graph()
+            g = dgl.DGLGraph()
             g.index = i
 
             # If there are some features for nodes and edges,
