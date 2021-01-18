@@ -25,7 +25,7 @@ class ReducedGraphgenGenerator(Generator):
         mapper = self.dataset.mapper
 
         dim_ts_out = mapper['max_nodes'] + 1
-        dim_tok_out  = len(self.mapper['reduced_forward']) + 1
+        dim_tok_out  = len(mapper['reduced_forward']) + 1
         dim_input = 2 * dim_ts_out + dim_tok_out
         max_edges = mapper['max_edges']
         pred_size = 3
