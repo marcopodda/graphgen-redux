@@ -33,6 +33,6 @@ export LD_LIBRARY_PATH=$CONDA_PREFIX/lib/:$LD_LIBRARY_PATH
 mkdir -p bin
 
 g++ -std=c++11 datasets/dfs_code.cpp -o bin/dfscode -O3
-g++ -std=c++11 metrics/orca/orca.cpp -o bin/orca -O3
-g++ -std=c++11 metrics/isomorph.cpp -O3 -o bin/subiso -fopenmp -I$CONDA_PREFIX/include
-g++ -std=c++11 metrics/unique.cpp -O3 -o bin/unique -fopenmp -I$CONDA_PREFIX/include
+g++ -std=c++11 evaluation/metrics/orca/orca.cpp -o bin/orca -O3
+g++ -std=c++11 evaluation/metrics/isomorph.cpp -O3 -o bin/subiso -fopenmp -I$CONDA_PREFIX/include
+g++ -std=c++11 evaluation/metrics/unique.cpp -O3 -o bin/unique -fopenmp -I$CONDA_PREFIX/include

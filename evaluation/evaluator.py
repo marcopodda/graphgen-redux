@@ -1,10 +1,11 @@
 import random
 from statistics import mean
 
+from core.module import BaseModule
 from core.serialization import load_pickle, save_pickle
+from core.settings import DATA_DIR
 from core.utils import get_or_create_dir
-from modules.base import Base
-from metrics import stats
+from evaluation.metrics import stats
 
 
 LINE_BREAK = '----------------------------------------------------------------------\n'
@@ -32,13 +33,17 @@ def print_stats(
     print(LINE_BREAK)
 
 
-class Evaluator(Base):
-    def evaluate(self, epoch):
-        indices = self.dataset.indices
-        real_graphs = self.dataset.select_graphs(indices['test'])
+class Evaluator(BaseModule):
+    def __init__(self, model_name, root_dir, dataset_name, hparams, gpu):
+        super().__init__(model_name, root_dir, dataset_name, hparams, gpu)
 
-        reduced = "_red" if self.reduced else ""
-        gen_graphs = load_pickle(self.dirs.samples / f"samples_{epoch:02d}{reduced}.pkl")
+        self.graphs = load_pickle(DATA_DIR  / dataset_name / "graphs.pkl")
+        self.indices = load_pickle(DATA_DIR / dataset_name / "splits.pkl")
+
+    def evaluate(self, epoch):
+        real_graphs = [self.graphs[i] for i in self.indices['test']]
+        print(self.dirs)
+        gen_graphs = load_pickle(self.dirs.samples / f"samples_{epoch:02d}.pkl")
         tmp_dir = "."
 
         novelty_score = stats.novelty(real_graphs, gen_graphs, tmp_dir, timeout=60)
@@ -107,11 +112,11 @@ class Evaluator(Base):
             "MMD Node labels and degrees": node_label_and_degree
         }
 
-        reduced = "_red" if self.reduced else ""
-        filename = self.dirs.eval / f"results{reduced}_{epoch:02d}.pkl"
+        filename = self.dirs.eval / f"results_{epoch:02d}.pkl"
         save_pickle(results, filename)
 
     def _setup_dirs(self, root_dir):
         dirs = super()._setup_dirs(root_dir)
+        dirs.samples = get_or_create_dir(dirs.exp / "samples")
         dirs.eval = get_or_create_dir(dirs.exp / "evaluation")
         return dirs

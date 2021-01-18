@@ -4,9 +4,9 @@ from pathlib import Path
 from core.settings import DATASETS
 from datasets.create_dataset import create_dataset
 from datasets.preprocess_dataset import preprocess_dataset
-from modules.trainer import Trainer
-from modules.generator import Generator
-from modules.evaluator import Evaluator
+from evaluation.evaluator import Evaluator
+
+from models import MODEL_CONFIG
 
 
 def command_parser():
@@ -24,11 +24,11 @@ def command_parser():
     sub_train = sub.add_parser('train', help="Train.")
     sub_train.add_argument("--reduced", default=False, action="store_true", help="Use reduced model.")
     sub_train.add_argument("--exp-name", default="Experiment", help="Experiment name.")
-    sub_train.add_argument("--dataset-name", default="drd2", help="Dataset name.")
+    sub_train.add_argument("--model-name", choices=MODEL_CONFIG.keys(), default="reduced-graphgen")
+    sub_train.add_argument("--dataset-name", choices=DATASETS, default="cora")
     sub_train.add_argument("--hparams-file", default="hparams.yml", help="HParams file.")
     sub_train.add_argument("--root-dir", default="RESULTS", help="Output folder.")
     sub_train.add_argument("--gpu", default=0, help="GPU number.", type=int)
-    sub_train.add_argument("--debug", default=False, action="store_true", help="Debug mode.")
     sub_train.set_defaults(command='train')
 
     sub_generate = sub.add_parser('generate', help="Generation.")
@@ -56,11 +56,15 @@ if __name__ == "__main__":
         preprocess_dataset(args.dataset_name)
 
     elif args.command == "train":
-        trainer = Trainer.from_args(args)
+        trainer_class = MODEL_CONFIG[args.model_name]["trainer"]
+        trainer = trainer_class.from_args(args)
         trainer.train()
 
     elif args.command == "generate":
-        generator = Generator.initialize(Path(args.exp_path))
+        exp_path = Path(args.exp_path)
+        model_name = exp_path.parts[-1]
+        generator_class = MODEL_CONFIG[model_name]["generator"]
+        generator = generator_class.initialize(exp_path)
         generator.generate(epoch=args.epoch, device=args.gpu)
 
     elif args.command == "evaluate":

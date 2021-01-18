@@ -1,7 +1,7 @@
 import torch
-
 from torch import nn
 from torch.nn import init
+
 from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
 
@@ -49,3 +49,23 @@ class RNN(nn.Module):
             output, _ = pad_packed_sequence(output, batch_first=True)
 
         return output
+
+
+class MLP(nn.Module):
+    def __init__(self, input_size, hidden_size, output_size, dropout=0):
+        super().__init__()
+
+        self.mlp = nn.Sequential(
+            nn.Linear(input_size, hidden_size),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+            nn.Linear(hidden_size, output_size),
+            nn.Softmax(dim=2))
+
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                m.weight.data = init.xavier_uniform_(
+                    m.weight.data, gain=nn.init.calculate_gain('relu'))
+
+    def forward(self, x):
+        return self.mlp(x)

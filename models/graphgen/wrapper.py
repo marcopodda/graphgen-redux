@@ -5,16 +5,15 @@ from torch.optim.lr_scheduler import MultiStepLR
 import pytorch_lightning as pl
 
 from core.hparams import HParams
-from modules.model import Model, ReducedModel
 
 
-class Wrapper(pl.LightningModule):
-    def __init__(self, hparams, mapper, reduced):
+class GraphgenWrapper(pl.LightningModule):
+    model_class = None
+
+    def __init__(self, hparams, mapper):
         super().__init__()
         self.hparams = HParams.load(hparams)
-
-        model_class = ReducedModel if reduced else Model
-        self.model = model_class(hparams, mapper)
+        self.model = self.model_class(hparams, mapper)
 
     def forward(self, batch):
         return self.model(batch)

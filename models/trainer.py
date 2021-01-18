@@ -1,32 +1,39 @@
-import torch
-from argparse import Namespace
 from pathlib import Path
+from argparse import Namespace
+
+import torch
 
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from core.serialization import save_yaml
+from core.serialization import save_yaml, load_yaml
 from core.hparams import HParams
+from core.utils import get_or_create_dir
+from core.module import BaseModule
 from datasets.loaders import DataLoader
-from modules.base import Base
-from modules.wrapper import Wrapper
 
 
-class Trainer(Base):
+class Trainer(BaseModule):
+    loader_class = None
+
     @classmethod
     def from_args(cls, args):
         return cls(
-            exp_name=args.exp_name,
+            model_name=args.model_name,
             root_dir=args.root_dir,
             dataset_name=args.dataset_name,
-            reduced=args.reduced,
             hparams=HParams.from_file(args.hparams_file),
-            gpu=args.gpu if torch.cuda.is_available() else None,
-            debug=args.debug)
+            gpu=args.gpu if torch.cuda.is_available() else None)
 
-    def __init__(self, exp_name, root_dir, dataset_name, reduced, hparams, gpu, debug):
-        super().__init__(exp_name, root_dir, dataset_name, reduced, hparams, gpu, debug)
+    def _setup_dirs(self, root_dir):
+        dirs = super()._setup_dirs(root_dir)
+        dirs.log = get_or_create_dir(dirs.exp / "logs")
+        return dirs
+
+    def __init__(self, model_name, root_dir, dataset_name, hparams, gpu):
+        super().__init__(model_name, root_dir, dataset_name, hparams, gpu)
+        self.dataset = self.dataset_class(dataset_name)
         self.dump()
 
     def train(self):
@@ -40,10 +47,7 @@ class Trainer(Base):
             mode='min'
         )
 
-        wrapper = Wrapper(
-            hparams=self.hparams,
-            mapper=self.dataset.mapper,
-            reduced=self.reduced)
+        wrapper = self.get_wrapper()
 
         trainer = pl.Trainer(
             logger=logger,
@@ -54,20 +58,11 @@ class Trainer(Base):
             progress_bar_refresh_rate=10,
             gpus=[self.gpu] if self.gpu is not None else None)
 
-        loader = DataLoader(self.hparams, self.dataset)
+        loader = self.loader_class(self.hparams, self.dataset)
         train_loader = loader(partition="train", shuffle=True)
         val_loader = loader(partition="val", shuffle=False)
 
         trainer.fit(wrapper, train_dataloader=train_loader, val_dataloaders=val_loader)
 
-    def dump(self):
-        config = {
-            "exp_name": self.exp_name,
-            "root_dir": self.dirs.root.as_posix(),
-            "dataset_name": self.dataset_name,
-            "reduced": self.reduced,
-            "hparams": self.hparams.__dict__,
-            "gpu": self.gpu,
-            "debug": self.debug
-        }
-        save_yaml(config, self.dirs.exp / "config.yml")
+    def get_wrapper(self):
+        raise NotImplementedError

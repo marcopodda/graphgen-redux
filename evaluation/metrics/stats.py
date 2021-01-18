@@ -8,7 +8,7 @@ from functools import partial
 import numpy as np
 import networkx as nx
 
-import metrics.mmd as mmd
+import evaluation.metrics.mmd as mmd
 from core.utils import get_n_jobs
 
 from joblib import Parallel, delayed
