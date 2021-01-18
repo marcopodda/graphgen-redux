@@ -14,11 +14,10 @@ from models.data import BaseDataset, BaseLoader
 class Dataset(BaseDataset):
     def __init__(self, name):
         super().__init__(name)
-
         self.mapper = load_pickle(self.root_dir / "map.dict")
 
     def __len__(self):
-        return len(self.graphs_indices)
+        return len(self.graphs)
 
     def __getitem__(self, idx):
         graph = self.graphs[idx]

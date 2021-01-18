@@ -14,6 +14,7 @@ from torch.optim.lr_scheduler import MultiStepLR
 import pytorch_lightning as pl
 
 from core.hparams import HParams
+from models.wrapper import BaseWrapper
 from models.trainer import Trainer
 from models.dgmg.data import Dataset, Loader
 
@@ -615,37 +616,16 @@ class Model(nn.Module):
             batch_size = len(actions)
 
         self.prepare(batch_size, training)
-        return self.forward_train(actions)
+        log_prob = self.forward_train(actions)
+        return -log_prob / batch_size
 
 
-class DGMG(pl.LightningModule):
-    def __init__(self, hparams, mapper):
-        super().__init__()
-        self.hparams = HParams.load(hparams)
-        self.model = Model(hparams, mapper)
+class DGMG(BaseWrapper):
+    model_class = Model
 
     def forward(self, batch):
         batch_size = len(batch)
         return self.model(batch_size, actions=batch, training=True)
-
-    def configure_optimizers(self):
-        optimizer = Adam(self.parameters(), lr=self.hparams.lr, weight_decay=5e-5)
-        scheduler = MultiStepLR(optimizer, milestones=self.hparams.milestones)
-        return [optimizer], [scheduler]
-
-    def shared_step(self, batch, batch_idx):
-        batch_size = len(batch)
-        log_prob = self(batch)
-        return -log_prob / batch_size
-
-    def training_step(self, batch, batch_idx):
-        loss = self.shared_step(batch, batch_idx)
-        self.log("train_loss", loss, prog_bar=False, on_epoch=True)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        loss = self.shared_step(batch, batch_idx)
-        self.log("val_loss", loss, prog_bar=True, on_epoch=True)
 
 
 class DGMGTrainer(Trainer):

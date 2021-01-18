@@ -7,6 +7,9 @@ from models.graphgen.vanilla.generator import GraphgenGenerator
 from models.graphgen.reduced.model import ReducedGraphgenTrainer
 from models.graphgen.reduced.generator import ReducedGraphgenGenerator
 
+from models.graphrnn.model import GraphRNNTrainer
+from models.graphrnn.generator import GraphRNNGenerator
+
 
 
 MODEL_CONFIG = {
@@ -21,8 +24,8 @@ MODEL_CONFIG = {
         "hparams": "hparams.yml"
     },
     "graphrnn": {
-        "trainer": None,
-        "generator": None,
+        "trainer": GraphRNNTrainer,
+        "generator": GraphRNNGenerator,
         "hparams": "hparams_graphrnn.yml"
     },
     "dgmg": {

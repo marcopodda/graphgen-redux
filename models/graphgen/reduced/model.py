@@ -7,8 +7,8 @@ from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
 from models.trainer import Trainer
 
-from models.graphgen.modules import MLP, RNN
-from models.graphgen.wrapper import GraphgenWrapper
+from models.layers import LSTM, SoftmaxMLP
+from models.wrapper import BaseWrapper
 from models.graphgen.reduced.data import Dataset, Loader
 
 
@@ -20,26 +20,26 @@ class Model(nn.Module):
         self.dim_tok_out  = len(mapper['reduced_forward']) + 1
         self.dim_input = 2 * self.dim_ts_out + self.dim_tok_out
 
-        self.rnn = RNN(
+        self.rnn = LSTM(
             input_size=self.dim_input,
             embedding_size=hparams.embedding_size,
             hidden_size=hparams.rnn_hidden_size,
             num_layers=hparams.num_layers,
             dropout=hparams.dropout)
 
-        self.output_t1 = MLP(
+        self.output_t1 = SoftmaxMLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_ts_out,
             dropout=hparams.dropout)
 
-        self.output_t2 = MLP(
+        self.output_t2 = SoftmaxMLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_ts_out,
             dropout=hparams.dropout)
 
-        self.output_tok = MLP(
+        self.output_tok = SoftmaxMLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_tok_out,
@@ -85,10 +85,12 @@ class Model(nn.Module):
         y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
         y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
 
-        return y_pred, y, lengths
+        loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
+        loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
+        return loss
 
 
-class ReducedGraphgen(GraphgenWrapper):
+class ReducedGraphgen(BaseWrapper):
     model_class = Model
 
 

@@ -20,9 +20,6 @@ class DGMGGenerator(Generator):
         model = model.to(device)
         mapper = self.dataset.mapper
 
-        for _, net in model.items():
-            net.eval()
-
         batch_size = self.hparams.batch_size
         num_samples = self.hparams.num_samples
         num_iter = num_samples // batch_size
