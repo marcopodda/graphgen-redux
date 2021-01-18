@@ -180,7 +180,7 @@ class AddNode(nn.Module):
         hv_init = self.initialize_hv(init_vec)
         g.nodes[num_nodes - 1].data['hv'] = hv_init
         g.nodes[num_nodes - 1].data['a'] = self.init_node_activation
-        g.nodes[num_nodes - 1].data['label'] = torch.tensor([[node_type]])
+        g.nodes[num_nodes - 1].data['label'] = torch.tensor([[node_type]], device=self.device)
 
     def prepare_training(self):
         """
@@ -322,9 +322,10 @@ class ChooseDestAndUpdate(nn.Module):
 
     def _initialize_edge_repr(self, g, src_list, dest_list, edge_types):
         # For multiple edge types, we use an embedding module.
-        edge_repr = self.edge_type_embed(torch.tensor(edge_types, dtype=torch.long, device=self.device))
+        et = torch.tensor(edge_types, dtype=torch.long, device=self.device)
+        edge_repr = self.edge_type_embed(et)
         g.edges[src_list, dest_list].data['he'] = edge_repr
-        g.edges[src_list, dest_list].data['label'] = torch.tensor(edge_types).unsqueeze(1)
+        g.edges[src_list, dest_list].data['label'] = et.unsqueeze(1)
 
     def prepare_training(self):
         """
