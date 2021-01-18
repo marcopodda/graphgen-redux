@@ -361,8 +361,8 @@ class ChooseDestAndUpdate(nn.Module):
 
             src_embed_expand = g.nodes[src].data['hv'].expand(src, -1)
             possible_dests_embed = g.nodes[possible_dests].data['hv']
-            dest = torch.cat([possible_dests_embed,src_embed_expand]).view(1, -1)
-            dests_scores = self.choose_dest(self.dropout(dest))
+            dest = torch.cat([possible_dests_embed,src_embed_expand], dim=1)
+            dests_scores = self.choose_dest(self.dropout(dest)).view(1, -1)
             dests_log_probs = F.log_softmax(dests_scores, dim=1)
 
             if not training:
