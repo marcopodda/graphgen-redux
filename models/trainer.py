@@ -24,7 +24,7 @@ class TimeElapsedCallback(Callback):
     def on_train_end(self, trainer, pl_module):
         elapsed = time_elapsed(time.time(), self.start_time)
         path = self.log_dir / "time_elapsed.txt"
-        with open(path, "r") as f:
+        with open(path, "w") as f:
             print(f"Time elapsed: {elapsed}", file=f)
 
 
