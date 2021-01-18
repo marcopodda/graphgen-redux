@@ -400,8 +400,7 @@ class Model(nn.Module):
         self.num_node_types = len(mapper['node_forward'])
         self.num_edge_types = len(mapper['edge_forward'])
         self.dropout_prob = hparams.dropout
-
-        print("-------------device------------", self.device)
+        self.device = "cuda:0"
 
         # Graph embedding module
         self.graph_embed = GraphEmbed(self.node_hidden_size, device=self.device)
@@ -416,8 +415,6 @@ class Model(nn.Module):
 
         # Weight initialization
         self.init_weights()
-        self.device = "cuda:0" # next(self.parameters()).device
-
 
     def init_weights(self):
         self.graph_embed.apply(weights_init)
