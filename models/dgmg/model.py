@@ -176,6 +176,7 @@ class AddNode(nn.Module):
     def _initialize_node_repr(self, g, node_type, graph_embed):
         num_nodes = g.number_of_nodes()
         t = torch.LongTensor([node_type], device=self.device)
+        print(t.device, graph_embed.device)
         init_vec = torch.cat([self.node_type_embed(t), graph_embed], dim=1)
         hv_init = self.initialize_hv(init_vec)
         g.nodes[num_nodes - 1].data['hv'] = hv_init
