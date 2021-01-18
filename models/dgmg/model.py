@@ -401,7 +401,6 @@ class Model(nn.Module):
         self.num_edge_types = len(mapper['edge_forward'])
         self.dropout_prob = hparams.dropout
 
-        self.device = next(self.parameters()).device
         print("-------------device------------", self.device)
 
         # Graph embedding module
@@ -417,6 +416,7 @@ class Model(nn.Module):
 
         # Weight initialization
         self.init_weights()
+        self.device = "cuda:0" # next(self.parameters()).device
 
 
     def init_weights(self):
