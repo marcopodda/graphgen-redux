@@ -415,6 +415,7 @@ class Model(nn.Module):
 
         # Weight initialization
         self.init_weights()
+        self.device = next(self.parameters()).device
 
     def init_weights(self):
         self.graph_embed.apply(weights_init)
@@ -438,8 +439,8 @@ class Model(nn.Module):
 
             # If there are some features for nodes and edges,
             # zero tensors will be set for those of new nodes and edges.
-            g.set_n_initializer(dgl.frame.zero_initializer)
-            g.set_e_initializer(dgl.frame.zero_initializer)
+            g.set_n_initializer(dgl.frame.zero_initializer, ctx=self.device)
+            g.set_e_initializer(dgl.frame.zero_initializer, ctx=self.device)
 
             self.g_list.append(g)
 
