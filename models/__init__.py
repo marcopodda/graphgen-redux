@@ -1,3 +1,6 @@
+from models.dgmg.model import DGMGTrainer
+from models.dgmg.generator import DGMGGenerator
+
 from models.graphgen.vanilla.model import GraphgenTrainer
 from models.graphgen.vanilla.generator import GraphgenGenerator
 
@@ -9,18 +12,22 @@ from models.graphgen.reduced.generator import ReducedGraphgenGenerator
 MODEL_CONFIG = {
     "graphgen": {
         "trainer": GraphgenTrainer,
-        "generator": GraphgenGenerator
+        "generator": GraphgenGenerator,
+        "hparams": "hparams.yml"
     },
     "reduced-graphgen": {
         "trainer": ReducedGraphgenTrainer,
-        "generator": ReducedGraphgenGenerator
+        "generator": ReducedGraphgenGenerator,
+        "hparams": "hparams.yml"
     },
     "graphrnn": {
         "trainer": None,
-        "generator": None
+        "generator": None,
+        "hparams": "hparams_graphrnn.yml"
     },
-    "DGMG": {
-        "trainer": None,
-        "generator": None
+    "dgmg": {
+        "trainer": DGMGTrainer,
+        "generator": DGMGGenerator,
+        "hparams": "hparams_dgmg.yml"
     },
 }

@@ -1,3 +1,4 @@
+import time
 from pathlib import Path
 from argparse import Namespace
 
@@ -5,11 +6,22 @@ import torch
 
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, Callback
 
 from core.hparams import HParams
-from core.utils import get_or_create_dir
 from core.module import BaseModule
+from core.utils import get_or_create_dir, time_elapsed
+
+
+class TimeElapsedCallback(Callback):
+    def on_train_start(self, trainer, pl_module):
+        self.start_time = time.time()
+
+    def on_train_end(self, trainer, pl_module):
+        elapsed = time_elapsed(time.time(), self.start_time)
+        path = trainer.dirs.logs / "time_elapsed.txt"
+        with open(path, "r") as f:
+            print(f"Time elapsed: {elapsed}", file=f)
 
 
 class Trainer(BaseModule):
@@ -37,6 +49,8 @@ class Trainer(BaseModule):
     def train(self):
         logger = TensorBoardLogger(save_dir=self.dirs.exp, name="", version="logs")
         ckpt_callback = ModelCheckpoint(filepath=self.dirs.ckpt, save_top_k=-1)
+        time_elapsed_callback = TimeElapsedCallback()
+
         early_stop_callback = EarlyStopping(
             monitor='val_loss',
             min_delta=1e-4,
@@ -49,7 +63,7 @@ class Trainer(BaseModule):
 
         trainer = pl.Trainer(
             logger=logger,
-            callbacks=[early_stop_callback],
+            callbacks=[early_stop_callback, time_elapsed_callback],
             checkpoint_callback=ckpt_callback,
             max_epochs=self.hparams.num_epochs,
             gradient_clip_val=self.hparams.clipping,

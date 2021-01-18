@@ -14,8 +14,6 @@ from core.utils import get_n_jobs
 from joblib import Parallel, delayed
 
 PRINT_TIME = True
-MAX_WORKERS = get_n_jobs()
-
 
 def degree_worker(G):
     return np.array(nx.degree_histogram(G))

@@ -24,7 +24,7 @@ class GraphgenWrapper(pl.LightningModule):
         return [optimizer], [scheduler]
 
     def shared_step(self, batch, batch_idx):
-        y_pred, y, lengths = self.model(batch)
+        y_pred, y, lengths = self(batch)
         loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
         loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
         return loss
