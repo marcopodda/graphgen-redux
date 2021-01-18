@@ -26,7 +26,7 @@ class BaseDataset:
         return self.tensorizer(code)
 
     def _split_dataset(self):
-        indices = np.arange(len(self.dataset))
+        indices = np.arange(len(self.graphs))
         train_indices, test_indices = train_test_split(indices, test_size=0.1)
         train_indices, val_indices = train_test_split(train_indices, test_size=0.1)
         indices = {"train": train_indices.tolist(), "val": val_indices.tolist(), "test": test_indices.tolist()}
