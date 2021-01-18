@@ -7,11 +7,9 @@ import pytorch_lightning as pl
 from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
 
-from core.serialization import save_yaml, load_yaml
 from core.hparams import HParams
 from core.utils import get_or_create_dir
 from core.module import BaseModule
-from datasets.loaders import DataLoader
 
 
 class Trainer(BaseModule):

@@ -21,9 +21,7 @@ def command_parser():
     sub_preprocess.add_argument("--dataset-name", choices=DATASETS, default="cora")
     sub_preprocess.set_defaults(command='preprocess')
 
-    sub_train = sub.add_parser('train', help="Train.")
-    sub_train.add_argument("--reduced", default=False, action="store_true", help="Use reduced model.")
-    sub_train.add_argument("--exp-name", default="Experiment", help="Experiment name.")
+    sub_train = sub.add_parser('train', help="Training.")
     sub_train.add_argument("--model-name", choices=MODEL_CONFIG.keys(), default="reduced-graphgen")
     sub_train.add_argument("--dataset-name", choices=DATASETS, default="cora")
     sub_train.add_argument("--hparams-file", default="hparams.yml", help="HParams file.")
@@ -37,7 +35,7 @@ def command_parser():
     sub_generate.add_argument("--gpu", default=None, help="GPU number.", type=int)
     sub_generate.set_defaults(command='generate')
 
-    sub_evaluate = sub.add_parser('evaluate', help="evaluate.")
+    sub_evaluate = sub.add_parser('evaluate', help="Evaluation.")
     sub_evaluate.add_argument("--exp-path", help="Experiment path.")
     sub_evaluate.add_argument("--epoch", help="Epoch to evaluate.", type=int)
     sub_evaluate.set_defaults(command='evaluate')
