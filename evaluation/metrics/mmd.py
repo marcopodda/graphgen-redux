@@ -65,7 +65,7 @@ def kernel_compute(X, Y=None, is_hist=True, metric='linear', n_jobs=None):
 
         if Y is not None:
             Y = preprocess(Y, max_len, is_hist)
-        print("-------------------", n_jobs)
+
         return pairwise_kernels(X, Y, metric=metric, n_jobs=n_jobs)
 
 

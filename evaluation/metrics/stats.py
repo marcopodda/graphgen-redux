@@ -40,7 +40,7 @@ def degree_stats(graph_ref_list, graph_pred_list):
     sample_ref = P(delayed(degree_worker)(G) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(degree_worker)(G) for i, G in enumerate(graph_pred_list))
 
-    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=1)
 
     elapsed = datetime.now() - start
     if PRINT_TIME:
@@ -83,7 +83,7 @@ def node_label_stats(graph_ref_list, graph_pred_list):
     sample_ref = P(delayed(node_label_worker)(G, node_map) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(node_label_worker)(G, node_map) for i, G in enumerate(graph_pred_list))
 
-    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=1)
 
     elapsed = datetime.now() - start
     if PRINT_TIME:
@@ -126,7 +126,7 @@ def edge_label_stats(graph_ref_list, graph_pred_list):
     sample_ref = P(delayed(edge_label_worker)(G, edge_map) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(edge_label_worker)(G, edge_map) for i, G in enumerate(graph_pred_list))
 
-    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=1)
 
     elapsed = datetime.now() - start
     if PRINT_TIME:
@@ -153,7 +153,7 @@ def clustering_stats(graph_ref_list, graph_pred_list, bins=100):
     sample_pred = P(delayed(clustering_worker)(G, bins) for i, G in enumerate(graph_pred_list))
 
     metric = partial(mmd.gaussian_emd, sigma=0.1, distance_scaling=bins)
-    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, metric=metric, n_jobs=MAX_WORKERS)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, metric=metric, n_jobs=1)
 
     elapsed = datetime.now() - start
     if PRINT_TIME:
@@ -228,7 +228,7 @@ def orbit_stats_all(graph_ref_list, graph_pred_list):
     total_counts_pred = np.array(total_counts_pred)
 
     metric = partial(mmd.gaussian, sigma=30.0)
-    mmd_dist = mmd.compute_mmd(total_counts_ref, total_counts_pred, metric=metric, is_hist=False, n_jobs=MAX_WORKERS)
+    mmd_dist = mmd.compute_mmd(total_counts_ref, total_counts_pred, metric=metric, is_hist=False, n_jobs=1)
 
     elapsed = datetime.now() - start
     if PRINT_TIME:
@@ -265,7 +265,7 @@ def node_label_and_degree_joint_stats(graph_ref_list, graph_pred_list):
     sample_ref = P(delayed(node_label_and_degree_worker)(G, node_map) for i, G in enumerate(graph_ref_list))
     sample_pred = P(delayed(node_label_and_degree_worker)(G, node_map) for i, G in enumerate(graph_pred_list))
 
-    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=MAX_WORKERS)
+    mmd_dist = mmd.compute_mmd(sample_ref, sample_pred, mmd.gaussian_emd, n_jobs=1)
 
     elapsed = datetime.now() - start
     if PRINT_TIME:
@@ -279,7 +279,7 @@ def nspdk_stats(graph_ref_list, graph_pred_list):
 
     start = datetime.now()
 
-    mmd_dist = mmd.compute_mmd(graph_ref_list, graph_pred_list, metric='nspdk', is_hist=False, n_jobs=MAX_WORKERS)
+    mmd_dist = mmd.compute_mmd(graph_ref_list, graph_pred_list, metric='nspdk', is_hist=False, n_jobs=1)
 
     elapsed = datetime.now() - start
     if PRINT_TIME:
