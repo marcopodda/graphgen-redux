@@ -175,12 +175,12 @@ class AddNode(nn.Module):
 
     def _initialize_node_repr(self, g, node_type, graph_embed):
         num_nodes = g.number_of_nodes()
-        t = torch.LongTensor([node_type], device=self.device)
+        t = torch.tensor([node_type], device=self.device)
         init_vec = torch.cat([self.node_type_embed(t), graph_embed], dim=1)
         hv_init = self.initialize_hv(init_vec)
         g.nodes[num_nodes - 1].data['hv'] = hv_init
         g.nodes[num_nodes - 1].data['a'] = self.init_node_activation
-        g.nodes[num_nodes - 1].data['label'] = torch.LongTensor([[node_type]])
+        g.nodes[num_nodes - 1].data['label'] = torch.tensor([[node_type]])
 
     def prepare_training(self):
         """
@@ -236,7 +236,7 @@ class AddNode(nn.Module):
                 self._initialize_node_repr(g, action, batch_graph_embed[i:i + 1, :])
 
         if training:
-            t = torch.tensor(a, device=self.device).unsqueeze(dim=1)
+            t = torch.tensor(a, dtype=torch.long, device=self.device).unsqueeze(dim=1)
             self.log_prob.append(batch_log_prob.gather(dim=1, index=t))
 
         return g_non_stop
@@ -322,9 +322,9 @@ class ChooseDestAndUpdate(nn.Module):
 
     def _initialize_edge_repr(self, g, src_list, dest_list, edge_types):
         # For multiple edge types, we use an embedding module.
-        edge_repr = self.edge_type_embed(torch.LongTensor(edge_types, device=self.device))
+        edge_repr = self.edge_type_embed(torch.tensor(edge_types, dtype=torch.long, device=self.device))
         g.edges[src_list, dest_list].data['he'] = edge_repr
-        g.edges[src_list, dest_list].data['label'] = torch.LongTensor(edge_types).unsqueeze(1)
+        g.edges[src_list, dest_list].data['label'] = torch.tensor(edge_types).unsqueeze(1)
 
     def prepare_training(self):
         """
