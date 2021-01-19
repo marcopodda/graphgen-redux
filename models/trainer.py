@@ -58,7 +58,7 @@ class Trainer(BaseModule):
         early_stop_callback = EarlyStopping(
             monitor='val_loss',
             min_delta=1e-4,
-            patience=10,
+            patience=1000,
             verbose=False,
             mode='min'
         )
