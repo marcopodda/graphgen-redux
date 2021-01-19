@@ -58,7 +58,7 @@ class GraphRNNGenerator(Generator):
                     # [batch_size] * [1] * [node_feature_len]
                     node_level_pred = model.output_node(node_level_output)
                     # [batch_size] * [node_feature_len] for torch.multinomial
-                    node_level_pred = node_level_pred.reshape(batch_size, len_node_vec)
+                    node_level_pred = node_level_pred.view(batch_size, len_node_vec)
                     # [batch_size]: Sampling index to set 1 in next node_level_input and x_pred_node
                     # Add a small probability for each node label to avoid zeros
                     node_level_pred[:, :-2] += EPS
@@ -68,7 +68,7 @@ class GraphRNNGenerator(Generator):
                     if i < self.hparams.min_num_node:
                         node_level_pred[:, -1] = 0
 
-                    sample_node_level_output = torch.multinomial(node_level_pred, 1).reshape(-1)
+                    sample_node_level_output = torch.multinomial(node_level_pred, 1).view(-1)
                     node_level_input = torch.zeros(batch_size, 1, feature_len, device=device)
                     node_level_input[torch.arange(batch_size), 0, sample_node_level_output] = 1
 
@@ -89,16 +89,16 @@ class GraphRNNGenerator(Generator):
                     for j in range(min(max_prev_node, i)):
                         # [batch_size] * [1] * [edge_feature_len]
                         edge_level_emb = model.edge_level_rnn(edge_level_input)
-                        edge_level_output = self.output_edge(edge_level_emb)
+                        edge_level_output = model.output_edge(edge_level_emb)
                         # [batch_size] * [edge_feature_len] needed for torch.multinomial
-                        edge_level_output = edge_level_output.reshape(batch_size, len_edge_vec)
+                        edge_level_output = edge_level_output.view(batch_size, len_edge_vec)
 
                         # [batch_size]: Sampling index to set 1 in next edge_level input and x_pred_edge
                         # Add a small probability for no edge to avoid zeros
                         edge_level_output[:, -3] += EPS
                         # Start token and end should not be sampled. So set it's probability to 0
                         edge_level_output[:, -2:] = 0
-                        sample_edge_level_output = torch.multinomial(edge_level_output, 1).reshape(-1)
+                        sample_edge_level_output = torch.multinomial(edge_level_output, 1).view(-1)
                         edge_level_input = torch.zeros(batch_size, 1, len_edge_vec, device=device)
                         edge_level_input[:, 0, sample_edge_level_output] = 1
 
@@ -127,17 +127,7 @@ class GraphRNNGenerator(Generator):
                     for u in range(len(G.nodes())):
                         for p in range(min(max_prev_node, u)):
                             if x_pred_edge[k, u, p] < len(mapper['edge_forward']):
-                                if self.hparams.max_prev_node is not None:
-                                    v = u - p - 1
-                                elif self.hparams.max_head_and_tail is not None:
-                                    if p < self.hparams.max_head_and_tail[1]:
-                                        v = u - p - 1
-                                    else:
-                                        v = p - self.hparams.max_head_and_tail[1]
-                                else:
-                                    print('Error in sampling edge features')
-                                    exit()
-
+                                v = u - p - 1
                                 G.add_edge(u, v, label=mapper['edge_backward'][x_pred_edge[k, u, p]])
                             elif x_pred_edge[k, u, p] == len(mapper['edge_forward']):
                                 # No edge

@@ -105,12 +105,12 @@ def graph_to_matrix(G, mapper):
             adj_mat_3d[max(u, v), max(u, v) - min(u, v) - 1, elabel] = 1
             adj_mat_2d[max(u, v), max(u, v) - min(u, v) - 1] = 0
 
-    adj_mat_2d = adj_mat_2d.reshape(adj_mat_2d.size(0), adj_mat_2d.size(1), 1)
+    adj_mat_2d = adj_mat_2d.unsqueeze(2)
     zeros = torch.zeros((n, max_prev_node, 2))
     adj_mat = torch.cat([adj_mat_3d, adj_mat_2d, zeros], dim=2)
-    adj_mat = adj_mat.reshape((adj_mat.size(0), -1))
+    adj_mat = adj_mat.view((adj_mat.size(0), -1))
 
-    return torch.cat((node_mat, adj_mat), dim=1)
+    return torch.cat([node_mat, adj_mat], dim=1)
 
 
 class Dataset(BaseDataset):
@@ -150,9 +150,9 @@ class Dataset(BaseDataset):
         adj_feature_mat = graph_to_matrix(G, self.mapper)
 
         # prepare x_item
-        x_item[0:adj_feature_mat.shape[0],:adj_feature_mat.shape[1]] = adj_feature_mat
+        x_item[:adj_feature_mat.size(0), :adj_feature_mat.size(1)] = adj_feature_mat
 
-        return {'x': x_item, 'len': len(adj_feature_mat)}
+        return {'x': x_item, 'len': adj_feature_mat.size(0)}
 
 
 class Loader(BaseLoader):
