@@ -99,8 +99,8 @@ class Evaluator(BaseModule):
         )
 
         results = {
-            # "Novelty": novelty_score,
-            # "Uniqueness": uniqueness_score,
+            "Novelty": novelty_score,
+            "Uniqueness": uniqueness_score,
             "Node count avg. ref": node_count_avg_ref,
             "Node count avg. pred": node_count_avg_pred,
             "Edge count avg. ref": edge_count_avg_ref,
