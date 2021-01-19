@@ -5,8 +5,8 @@ import multiprocessing
 import itertools
 
 
-def time_elapsed(start, end):
-    return time.strftime("%H:%M:%S", time.gmtime(end - start))
+def time_elapsed(t):
+    return time.strftime("%H:%M:%S", time.gmtime(t))
 
 
 def get_n_jobs():

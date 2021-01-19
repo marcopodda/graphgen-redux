@@ -17,15 +17,21 @@ class TimeElapsedCallback(Callback):
     def __init__(self, log_dir):
         super().__init__()
         self.log_dir = log_dir
+        self.epochs = 0
 
     def on_train_start(self, trainer, pl_module):
         self.start_time = time.time()
 
+    def on_epoch_end(self, trainer, pl_module):
+        self.epochs += 1
+
     def on_train_end(self, trainer, pl_module):
-        elapsed = time_elapsed(self.start_time, time.time())
+        duration = time.time() - self.start_time
+        elapsed = time_elapsed(duration)
+        avg_epoch = time_elapsed(duration / self.epochs)
         path = self.log_dir / "time_elapsed.txt"
-        with open(path, "w") as f:
-            print(f"Time elapsed: {elapsed}", file=f)
+        with open(path, "a") as f:
+            print(f"Epochs: {self.epochs:05d} - Time elapsed: {elapsed} - Avg. epoch: {avg_epoch}", file=f)
 
 
 class Trainer(BaseModule):
