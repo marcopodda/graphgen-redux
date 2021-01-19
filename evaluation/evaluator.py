@@ -39,14 +39,16 @@ class Evaluator(BaseModule):
 
         self.graphs = load_pickle(DATA_DIR  / dataset_name / "graphs.pkl")
         self.indices = load_pickle(DATA_DIR / dataset_name / "splits.pkl")
+        self.num_samples = 256 if dataset_name != "ENZYMES" else 40
+        self.num_runs = 10 if dataset_name != "ENZYMES" else 64
 
     def evaluate(self, epoch):
         real_graphs = [self.graphs[i] for i in self.indices['test']]
         gen_graphs = load_pickle(self.dirs.samples / f"samples_{epoch:02d}.pkl")
         tmp_dir = "."
 
-        # novelty_score = stats.novelty(real_graphs, gen_graphs, tmp_dir, timeout=60)
-        # uniqueness_score = stats.uniqueness(gen_graphs, tmp_dir, timeout=120)
+        novelty_score = stats.novelty(real_graphs, gen_graphs, tmp_dir, timeout=60)
+        uniqueness_score = stats.uniqueness(gen_graphs, tmp_dir, timeout=120)
 
         node_count_avg_ref, node_count_avg_pred = [], []
         edge_count_avg_ref, edge_count_avg_pred = [], []
@@ -54,11 +56,11 @@ class Evaluator(BaseModule):
         degree_mmd, clustering_mmd, orbit_mmd, nspdk_mmd = [], [], [], []
         node_label_mmd, edge_label_mmd, node_label_and_degree = [], [], []
 
-        num_samples = self.hparams.num_samples
-        num_batches = len(gen_graphs) // num_samples
+        num_samples = self.num_samples
+        num_runs = self.num_runs
 
-        for i in range(num_batches):
-            print(f"Evaluating batch {i+1}")
+        for i in range(num_runs):
+            print(f"Evaluating run {i+1}")
             real_sample = random.sample(real_graphs, num_samples)
             gen_sample = gen_graphs[i*num_samples:i*num_samples+num_samples]
 
