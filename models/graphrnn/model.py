@@ -117,16 +117,14 @@ class Model(nn.Module):
         # Prepare hidden state for edge level RNN similiar to edge_mat
         # Ignoring the last graph level decoder END token output (all 0's)
         hidden_edge = pack_padded_sequence(hidden_edge, x_len, batch_first=True).data
-        idx = torch.tensor([i for i in range(hidden_edge.size(0)-1, -1, -1)], dtype=torch.long, device=x.device)
+        idx = [i for i in range(hidden_edge.size(0)-1, -1, -1)]
+        idx = torch.tensor(idx, dtype=torch.long, device=x.device)
         hidden_edge = hidden_edge.index_select(0, idx)
 
         # Set hidden state for edge-level RNN
         # shape of hidden tensor (num_layers, batch_size, hidden_size)
         hidden_edge = hidden_edge.unsqueeze(0)
-        hidden_edge_rem_layers = torch.zeros(self.hparams.num_layers - 1, hidden_edge.size(1), hidden_edge.size(2), device=x.device)
-
-        hidden = torch.cat([hidden_edge, hidden_edge_rem_layers], dim=0)
-        self.edge_level_rnn.hidden = hidden
+        self.edge_level_rnn.hidden = hidden_edge.repeat(self.hparams.num_layers, 1, 1)
 
         # Run edge level RNN
         sos = torch.zeros(sum(x_len), 1, self.num_edge_features, device=x.device)

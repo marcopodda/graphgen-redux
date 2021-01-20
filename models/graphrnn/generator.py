@@ -77,10 +77,8 @@ class GraphRNNGenerator(Generator):
 
                     # [batch_size] * [1] * [hidden_size_edge_level_rnn]
                     hidden_edge = model.embedding_node_to_edge(node_level_output)
-
-                    hidden_edge_rem_layers = torch.zeros(self.hparams.num_layers - 1, batch_size, hidden_edge.size(2), device=device)
-                    # [num_layers] * [batch_size] * [hidden_len]
-                    model.edge_level_rnn.hidden = torch.cat((hidden_edge.permute(1, 0, 2), hidden_edge_rem_layers), dim=0)
+                    hidden = hidden_edge.permute(1, 0, 2)
+                    model.edge_level_rnn.hidden = hidden.repeat(self.hparams.num_layers, 1, 1)
 
                     # [batch_size] * [1] * [edge_feature_len]
                     edge_level_input = torch.zeros(batch_size, 1, num_edge_features, device=device)
