@@ -402,7 +402,7 @@ def uniqueness(gen_graphs, temp_path, timeout):
 
     print('{} / {} predicted graphs are unique'.format(len(unique1), len(lines)))
     uniqueness_score = 0 if len(lines) == 0 else len(unique1) / len(lines)
-    print('Uniqueness - {:.6f}'.format(uniqueness_score)
+    print('Uniqueness - {:.6f}'.format(uniqueness_score))
 
     os.close(pred_fd)
     os.close(res_fd)
