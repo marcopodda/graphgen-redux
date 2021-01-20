@@ -20,13 +20,13 @@ class Model(nn.Module):
         self.mapper = mapper
 
         self.max_nodes = self.mapper['max_nodes']
-        self.len_node_vec = len(mapper['node_forward']) + 2
-        self.len_edge_vec = len(mapper['edge_forward']) + 3
+        self.num_node_features = len(mapper['node_forward']) + 2
+        self.num_edge_features = len(mapper['edge_forward']) + 3
         self.max_prev_node = mapper['max_prev_node']
-        self.feature_len = self.len_node_vec + self.max_prev_node * self.len_edge_vec
+        self.num_features = self.num_node_features + self.max_prev_node * self.num_edge_features
 
         self.node_level_rnn = GRU(
-            input_size=self.feature_len,
+            input_size=self.num_features,
             embedding_size=hparams.embedding_size_node_level_rnn,
             hidden_size=hparams.hidden_size_node_level_rnn,
             num_layers=hparams.num_layers)
@@ -37,7 +37,7 @@ class Model(nn.Module):
             output_size=hparams.hidden_size_edge_level_rnn)
 
         self.edge_level_rnn = GRU(
-            input_size=self.len_edge_vec,
+            input_size=self.num_edge_features,
             embedding_size=hparams.embedding_size_edge_level_rnn,
             hidden_size=hparams.hidden_size_edge_level_rnn,
             num_layers=hparams.num_layers)
@@ -45,12 +45,12 @@ class Model(nn.Module):
         self.output_node = SoftmaxMLP(
             input_size=hparams.hidden_size_node_level_rnn,
             hidden_size=hparams.embedding_size_node_output,
-            output_size=self.len_node_vec)
+            output_size=self.num_node_features)
 
         self.output_edge = SoftmaxMLP(
             input_size=hparams.hidden_size_edge_level_rnn,
             hidden_size=hparams.embedding_size_edge_output,
-            output_size=self.len_edge_vec)
+            output_size=self.num_edge_features)
 
     def forward(self, batch):
         x_unsorted = batch['x']
@@ -70,7 +70,7 @@ class Model(nn.Module):
         # Start token for graph level RNN decoder is node feature second last bit is 1
         sos = torch.zeros(batch_size, 1, x.size(2), device=x.device)
         node_level_input = torch.cat([sos, x], dim=1)
-        node_level_input[:, :, self.len_node_vec - 2] = 1
+        node_level_input[:, 0, self.num_node_features - 2] = 1
 
         # Forward propogation
         node_level_output = self.node_level_rnn(node_level_input, x_len=x_len + 1)
@@ -79,10 +79,10 @@ class Model(nn.Module):
         x_pred_node = self.output_node(node_level_output)
 
         # Evaluating edge predictions
-        # Make a 2D matrix of edge feature vectors with size = [sum(x_len)] x [min(x_len_max - 1, max_prev_node) * len_edge_vec]
+        # Make a 2D matrix of edge feature vectors with size = [sum(x_len)] x [min(x_len_max - 1, max_prev_node) * num_edge_features]
         # 2D matrix will have edge vectors sorted by time_stamp in graph level RNN
-        offset = min(x_len_max - 1, self.max_prev_node) * self.len_edge_vec
-        edge_mat_to_pack = x[:, :, self.len_node_vec:self.len_node_vec + offset]
+        offset = min(x_len_max - 1, self.max_prev_node) * self.num_edge_features
+        edge_mat_to_pack = x[:, :, self.num_node_features:self.num_node_features + offset]
         edge_mat = pack_padded_sequence(edge_mat_to_pack, x_len, batch_first=True).data
 
         # Time stamp 'i' corresponds to edge feature sequence of length i (including start token added later)
@@ -90,12 +90,12 @@ class Model(nn.Module):
         idx = torch.tensor([i for i in range(edge_mat.size(0) - 1, -1, -1)], dtype=torch.long, device=x.device)
         edge_mat = edge_mat.index_select(0, idx)
 
-        # Start token of edge level RNN is 1 at second last position in vector of length len_edge_vector
-        # End token of edge level RNN is 1 at last position in vector of length len_edge_vector
+        # Start token of edge level RNN is 1 at second last position in vector of length num_edge_featurestor
+        # End token of edge level RNN is 1 at last position in vector of length num_edge_featurestor
         # Convert the edge_mat in a 3D tensor of size
-        # [sum(x_len)] x [min(x_len_max, max_prev_node + 1)] x [len_edge_vec]
+        # [sum(x_len)] x [min(x_len_max, max_prev_node + 1)] x [num_edge_features]
         offset = min(x_len_max - 1, self.max_prev_node)
-        edge_mat = edge_mat.view(edge_mat.size(0), offset, self.len_edge_vec)
+        edge_mat = edge_mat.view(edge_mat.size(0), offset, self.num_edge_features)
 
         # Compute descending list of lengths for y_edge
         x_edge_len = []
@@ -129,9 +129,9 @@ class Model(nn.Module):
         self.edge_level_rnn.hidden = hidden
 
         # Run edge level RNN
-        sos = torch.zeros(sum(x_len), 1, self.len_edge_vec, device=x.device)
+        sos = torch.zeros(sum(x_len), 1, self.num_edge_features, device=x.device)
         edge_level_input = torch.cat([sos, edge_mat], dim=1)
-        edge_level_input[:, 0, self.len_edge_vec - 2] = 1
+        edge_level_input[:, 0, self.num_edge_features - 2] = 1
 
         x_emb_edge = self.edge_level_rnn(edge_level_input, x_len=x_edge_len)
         x_pred_edge = self.output_edge(x_emb_edge)
@@ -143,13 +143,13 @@ class Model(nn.Module):
         x_pred_edge, _ = pad_packed_sequence(x_pred_edge, batch_first=True)
 
         # Loss evaluation & backprop
-        zeros = torch.zeros(batch_size, 1, self.len_node_vec, device=x.device)
-        x_node = torch.cat([x[:, :, :self.len_node_vec], zeros], dim=1)
-        x_node[:, x_len, self.len_node_vec - 1] = 1
+        zeros = torch.zeros(batch_size, 1, self.num_node_features, device=x.device)
+        x_node = torch.cat([x[:, :, :self.num_node_features], zeros], dim=1)
+        x_node[torch.arange(batch_size), x_len, self.num_node_features - 1] = 1
 
-        zeros = torch.zeros(sum(x_len), 1, self.len_edge_vec, device=x.device)
+        zeros = torch.zeros(sum(x_len), 1, self.num_edge_features, device=x.device)
         x_edge = torch.cat([edge_mat, zeros], dim=1)
-        x_edge[:, x_edge_len - 1, self.len_edge_vec - 1] = 1
+        x_edge[torch.arange(sum(x_len)), x_edge_len - 1, self.num_edge_features - 1] = 1
 
         loss1 = F.binary_cross_entropy(x_pred_node, x_node)
         loss2 = F.binary_cross_entropy(x_pred_edge, x_edge)

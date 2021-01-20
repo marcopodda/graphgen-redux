@@ -78,22 +78,21 @@ def graph_to_matrix(G, mapper):
     :param max_head_and_tail: Head and tail of adjacency vector to consider for edge prediction
     :random_bfs: Whether or not to do random_bfs
     """
-    n = len(G.nodes())
-    len_node_map = len(mapper['node_forward'])
-    len_edge_map = len(mapper['edge_forward'])
-    len_node_vec = len_node_map + 2
+    num_nodes = G.number_of_nodes()
+    num_node_features = len(mapper['node_forward']) + 2
+    num_edge_features = len(mapper['edge_forward'])
     max_prev_node = mapper['max_prev_node']
 
     bfs_seq = get_random_bfs_seq(G)
-    bfs_order_map = {bfs_seq[i]: i for i in range(n)}
+    bfs_order_map = {bfs_seq[i]: i for i in range(num_nodes)}
     G = nx.relabel_nodes(G, bfs_order_map)
 
-    # 3D adjacecny matrix in case of edge_features (each A[i, j] is a len_edge_vec size vector)
-    adj_mat_2d = torch.ones((n, max_prev_node))
+    # 3D adjacecny matrix in case of edge_features (each A[i, j] is a num_edge_features size vector)
+    adj_mat_2d = torch.ones((num_nodes, max_prev_node))
     adj_mat_2d.tril_(diagonal=-1)
-    adj_mat_3d = torch.zeros((n, max_prev_node, len_edge_map))
+    adj_mat_3d = torch.zeros((num_nodes, max_prev_node, num_edge_features))
 
-    node_mat = torch.zeros((n, len_node_vec))
+    node_mat = torch.zeros((num_nodes, num_node_features))
 
     for v, data in G.nodes.data():
         ind = mapper['node_forward'][data['label']]
@@ -106,7 +105,7 @@ def graph_to_matrix(G, mapper):
             adj_mat_2d[max(u, v), max(u, v) - min(u, v) - 1] = 0
 
     adj_mat_2d = adj_mat_2d.unsqueeze(2)
-    zeros = torch.zeros((n, max_prev_node, 2))
+    zeros = torch.zeros((num_nodes, max_prev_node, 2))
     adj_mat = torch.cat([adj_mat_3d, adj_mat_2d, zeros], dim=2)
     adj_mat = adj_mat.view((adj_mat.size(0), -1))
 
@@ -134,10 +133,10 @@ class Dataset(BaseDataset):
         self.max_prev_node = self.mapper['max_prev_node']
         self.max_nodes = self.mapper['max_nodes']
 
-        self.len_node_vec = len(self.mapper['node_forward']) + 2
-        self.len_edge_vec = len(self.mapper['edge_forward']) + 3
+        self.num_node_features = len(self.mapper['node_forward']) + 2
+        self.num_edge_features = len(self.mapper['edge_forward']) + 3
 
-        self.feature_len = self.len_node_vec + self.max_prev_node * self.len_edge_vec
+        self.feature_len = self.num_node_features + self.max_prev_node * self.num_edge_features
 
     def __len__(self):
         return len(self.graphs)
