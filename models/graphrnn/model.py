@@ -151,9 +151,9 @@ class Model(nn.Module):
         x_edge = torch.cat([edge_mat, zeros], dim=1)
         x_edge[torch.arange(sum(x_len)), x_edge_len - 1, self.num_edge_features - 1] = 1
 
-        loss1 = F.binary_cross_entropy(x_pred_node, x_node)
-        loss2 = F.binary_cross_entropy(x_pred_edge, x_edge)
-        return loss1 + loss2
+        loss1 = F.binary_cross_entropy(x_pred_node, x_node, reduction="sum")
+        loss2 = F.binary_cross_entropy(x_pred_edge, x_edge, reduction="sum")
+        return (loss1 + loss2) / batch_size
 
 
 class GraphRNN(BaseWrapper):
