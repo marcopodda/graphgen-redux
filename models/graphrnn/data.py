@@ -69,15 +69,6 @@ def get_random_bfs_seq(graph):
 
 
 def graph_to_matrix(G, mapper):
-    """
-    Method for converting graph to a 2d feature matrix
-    :param G: Networkx graph object
-    :param node_map: Node label to integer mapping
-    :param edge_map: Edge label to integer mapping
-    :param max_prev_node: Number of previous nodes to consider for edge prediction
-    :param max_head_and_tail: Head and tail of adjacency vector to consider for edge prediction
-    :random_bfs: Whether or not to do random_bfs
-    """
     num_nodes = G.number_of_nodes()
     num_node_features = len(mapper['node_forward']) + 2
     num_edge_features = len(mapper['edge_forward'])
@@ -87,7 +78,6 @@ def graph_to_matrix(G, mapper):
     bfs_order_map = {bfs_seq[i]: i for i in range(num_nodes)}
     G = nx.relabel_nodes(G, bfs_order_map)
 
-    # 3D adjacecny matrix in case of edge_features (each A[i, j] is a num_edge_features size vector)
     adj_mat_2d = torch.ones((num_nodes, max_prev_node))
     adj_mat_2d.tril_(diagonal=-1)
     adj_mat_3d = torch.zeros((num_nodes, max_prev_node, num_edge_features))
@@ -100,16 +90,15 @@ def graph_to_matrix(G, mapper):
 
     for u, v, data in G.edges.data():
         if abs(u - v) <= max_prev_node:
-            elabel =  mapper['edge_forward'][data['label']]
-            adj_mat_3d[max(u, v), max(u, v) - min(u, v) - 1, elabel] = 1
+            adj_mat_3d[max(u, v), max(u, v) - min(u, v) -
+                        1, mapper['edge_forward'][data['label']]] = 1
             adj_mat_2d[max(u, v), max(u, v) - min(u, v) - 1] = 0
 
-    adj_mat_2d = adj_mat_2d.unsqueeze(2)
-    zeros = torch.zeros((num_nodes, max_prev_node, 2))
-    adj_mat = torch.cat([adj_mat_3d, adj_mat_2d, zeros], dim=2)
-    adj_mat = adj_mat.view((adj_mat.size(0), -1))
+    adj_mat = torch.cat((adj_mat_3d, adj_mat_2d.reshape(adj_mat_2d.size(
+        0), adj_mat_2d.size(1), 1), torch.zeros((num_nodes, max_prev_node, 2))), dim=2)
+    adj_mat = adj_mat.reshape((adj_mat.size(0), -1))
 
-    return torch.cat([node_mat, adj_mat], dim=1)
+    return torch.cat((node_mat, adj_mat), dim=1)
 
 
 class Dataset(BaseDataset):
@@ -149,9 +138,9 @@ class Dataset(BaseDataset):
         adj_feature_mat = graph_to_matrix(G, self.mapper)
 
         # prepare x_item
-        x_item[:adj_feature_mat.size(0), :adj_feature_mat.size(1)] = adj_feature_mat
+        x_item[0:adj_feature_mat.shape[0],:adj_feature_mat.shape[1]] = adj_feature_mat
 
-        return {'x': x_item, 'len': adj_feature_mat.size(0)}
+        return {'x': x_item, 'len': len(adj_feature_mat)}
 
 
 class Loader(BaseLoader):
