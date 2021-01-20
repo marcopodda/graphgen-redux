@@ -89,7 +89,9 @@ class GraphRNNGenerator(Generator):
 
                     for j in range(min(max_prev_node, i)):
                         # [batch_size] * [1] * [edge_feature_len]
-                        edge_level_output = model['edge_level_rnn'](edge_level_input)
+                        edge_level_emb = model.edge_level_rnn(edge_level_input)
+                        edge_level_output = model.output_edge(edge_level_emb)
+
                         # [batch_size] * [edge_feature_len] needed for torch.multinomial
                         edge_level_output = edge_level_output.reshape(batch_size, num_edge_features)
 
