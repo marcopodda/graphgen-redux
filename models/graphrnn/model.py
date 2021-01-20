@@ -57,8 +57,8 @@ class Model(nn.Module):
         x_len_unsorted = batch['len']
         x_len_max = x_len_unsorted.max()
         x_unsorted = x_unsorted[:, :x_len_max, :]
-
         batch_size = x_unsorted.size(0)
+
         # sort input for packing variable length sequences
         x_len, sort_indices = torch.sort(x_len_unsorted, dim=0, descending=True)
         x = torch.index_select(x_unsorted, 0, sort_indices)
@@ -151,9 +151,9 @@ class Model(nn.Module):
         x_edge = torch.cat([edge_mat, zeros], dim=1)
         x_edge[torch.arange(sum(x_len)), x_edge_len - 1, self.num_edge_features - 1] = 1
 
-        loss1 = F.binary_cross_entropy(x_pred_node, x_node, reduction="sum")
-        loss2 = F.binary_cross_entropy(x_pred_edge, x_edge, reduction="sum")
-        return (loss1 + loss2) / batch_size
+        loss1 = F.binary_cross_entropy(x_pred_node, x_node)
+        loss2 = F.binary_cross_entropy(x_pred_edge, x_edge)
+        return loss1 + loss2
 
 
 class GraphRNN(BaseWrapper):
