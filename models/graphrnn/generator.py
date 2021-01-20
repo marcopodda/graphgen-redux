@@ -31,7 +31,7 @@ class GraphRNNGenerator(Generator):
 
         all_graphs = []
 
-        max_num_node = self.hparams.max_num_node
+        max_num_node = mapper['max_nodes']
         num_node_features = len(mapper['node_forward']) + 2
         num_edge_features = len(mapper['edge_forward']) + 3
         max_prev_node = mapper['max_prev_node']
@@ -64,9 +64,9 @@ class GraphRNNGenerator(Generator):
                     node_level_pred[:, :-2] += EPS
                     # Start token should not be sampled. So set it's probability to 0
                     node_level_pred[:, -2] = 0
-                    # End token should not be sampled if i less than min_num_node
-                    if i < self.hparams.min_num_node:
-                        node_level_pred[:, -1] = 0
+                    # # End token should not be sampled if i less than min_num_node
+                    # if i < 0:
+                    #     node_level_pred[:, -1] = 0
 
                     sample_node_level_output = torch.multinomial(node_level_pred, 1).view(-1)
                     node_level_input = torch.zeros(batch_size, 1, feature_len, device=device)
@@ -117,8 +117,7 @@ class GraphRNNGenerator(Generator):
                         if x_pred_node[k, v] == num_node_features - 1:
                             break
                         elif x_pred_node[k, v] < len(mapper['node_forward']):
-                            G.add_node(
-                                v, label=mapper['node_backward'][x_pred_node[k, v]])
+                            G.add_node(v, label=mapper['node_backward'][x_pred_node[k, v]])
                         else:
                             print('Error in sampling node features')
                             exit()
