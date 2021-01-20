@@ -361,7 +361,7 @@ def novelty(real_graphs, gen_graphs, temp_path, timeout):
     total_eval = len(set(calc1).intersection(set(calc2)))
 
     print('{} / {} graphs for sure novel'.format(novel, total_eval))
-    novelty_score = novel / total_eval
+    novelty_score = 0 if total_eval == 0 else novel / total_eval
     print('Novelty - {:.6f}'.format(novelty_score))
 
     os.close(pred_fd)
@@ -401,7 +401,7 @@ def uniqueness(gen_graphs, temp_path, timeout):
                 unique1.append(graph_pred_indices[int(unq[0])])
 
     print('{} / {} predicted graphs are unique'.format(len(unique1), len(lines)))
-    uniqueness_score = len(unique1) / len(lines)
+    uniqueness_score = 0 if len(lines) == 0 else len(unique1) / len(lines)
     print('Uniqueness - {:.6f}'.format(len(unique1) / len(lines)))
 
     os.close(pred_fd)
