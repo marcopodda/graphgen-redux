@@ -90,8 +90,7 @@ def graph_to_matrix(G, mapper):
 
     for u, v, data in G.edges.data():
         if abs(u - v) <= max_prev_node:
-            adj_mat_3d[max(u, v), max(u, v) - min(u, v) -
-                        1, mapper['edge_forward'][data['label']]] = 1
+            adj_mat_3d[max(u, v), max(u, v) - min(u, v) - 1, mapper['edge_forward'][data['label']]] = 1
             adj_mat_2d[max(u, v), max(u, v) - min(u, v) - 1] = 0
 
     adj_mat = torch.cat((adj_mat_3d, adj_mat_2d.reshape(adj_mat_2d.size(

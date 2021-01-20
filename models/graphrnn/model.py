@@ -128,7 +128,8 @@ class Model(nn.Module):
         self.edge_level_rnn.hidden = torch.cat((hidden_edge, hidden_edge_rem_layers), dim=0)
 
         # Run edge level RNN
-        x_pred_edge = self.edge_level_rnn(edge_level_input, x_len=x_edge_len)
+        x_pred_emb = self.edge_level_rnn(edge_level_input, x_len=x_edge_len)
+        x_pred_edge = self.output_edge(x_pred_emb)
 
         # cleaning the padding i.e setting it to zero
         x_pred_node = pack_padded_sequence(x_pred_node, x_len + 1, batch_first=True)
