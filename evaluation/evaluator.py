@@ -92,6 +92,12 @@ class Evaluator(BaseModule):
             print("Node labels + Degree distribution...")
             node_label_and_degree.append(stats.node_label_and_degree_joint_stats(real_sample, gen_sample))
 
+            print_stats(
+                node_count_avg_ref, node_count_avg_pred, edge_count_avg_ref, edge_count_avg_pred,
+                degree_mmd, clustering_mmd, orbit_mmd, nspdk_mmd, node_label_mmd,
+                edge_label_mmd, node_label_and_degree
+            )
+        print("----------Final Results----------")
         print_stats(
             node_count_avg_ref, node_count_avg_pred, edge_count_avg_ref, edge_count_avg_pred,
             degree_mmd, clustering_mmd, orbit_mmd, nspdk_mmd, node_label_mmd,
