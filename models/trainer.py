@@ -43,6 +43,7 @@ class Trainer(BaseModule):
             model_name=args.model_name,
             root_dir=args.root_dir,
             dataset_name=args.dataset_name,
+            epochs=args.epochs,
             hparams=HParams.from_file(args.hparams_file),
             gpu=args.gpu if torch.cuda.is_available() else None)
 
@@ -51,8 +52,8 @@ class Trainer(BaseModule):
         dirs.logs = get_or_create_dir(dirs.exp / "logs")
         return dirs
 
-    def __init__(self, model_name, root_dir, dataset_name, hparams, gpu):
-        super().__init__(model_name, root_dir, dataset_name, hparams, gpu)
+    def __init__(self, model_name, root_dir, dataset_name, epochs, hparams, gpu):
+        super().__init__(model_name, root_dir, dataset_name, epochs, hparams, gpu)
         self.dataset = self.dataset_class(dataset_name)
         self.dump()
 
@@ -75,7 +76,7 @@ class Trainer(BaseModule):
             logger=logger,
             callbacks=[early_stop_callback, time_elapsed_callback],
             checkpoint_callback=ckpt_callback,
-            max_epochs=self.hparams.num_epochs,
+            max_epochs=self.epochs,
             gradient_clip_val=self.hparams.clipping,
             progress_bar_refresh_rate=10,
             gpus=[self.gpu] if self.gpu is not None else None)

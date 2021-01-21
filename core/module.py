@@ -15,10 +15,11 @@ class BaseModule:
         config = load_yaml(exp_dir / "config.yml")
         return cls(**config)
 
-    def __init__(self, model_name, root_dir, dataset_name, hparams, gpu):
+    def __init__(self, model_name, root_dir, dataset_name, epochs, hparams, gpu):
         self.model_name = model_name
         self.dataset_name = dataset_name
         self.hparams = HParams.load(hparams)
+        self.epochs = epochs
         self.gpu = gpu
         self.dirs = self._setup_dirs(root_dir)
 
@@ -41,6 +42,7 @@ class BaseModule:
             "root_dir": self.dirs.root.as_posix(),
             "dataset_name": self.dataset_name,
             "hparams": self.hparams.__dict__,
+            "epochs": self.epochs,
             "gpu": self.gpu
         }
         save_yaml(config, self.dirs.exp / "config.yml")

@@ -24,6 +24,7 @@ def command_parser():
     sub_train = sub.add_parser('train', help="Training.")
     sub_train.add_argument("--model-name", choices=MODEL_CONFIG.keys(), default="reduced-graphgen")
     sub_train.add_argument("--dataset-name", choices=DATASETS, default="cora")
+    sub_train.add_argument("--epochs", type=int, default=50)
     sub_train.add_argument("--root-dir", default="RESULTS", help="Output folder.")
     sub_train.add_argument("--gpu", default=0, help="GPU number.", type=int)
     sub_train.set_defaults(command='train')
