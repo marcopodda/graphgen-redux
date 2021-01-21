@@ -115,7 +115,12 @@ def graph_from_reduced_dfscode(reduced_dfscode):
 
     for reduced_dfscode_egde in reduced_dfscode:
         i, j, token = reduced_dfscode_egde
-        l1, e, l2 = token.split("-")
+        try:
+            l1, e, l2 = token.split("-")
+        except:
+            l1, d1, e, l2, d2 = token.split("-")
+            l1 = f"{l1}-{d1}"
+            l2 = f"{l2}-{d2}"
         graph.add_node(int(i), label=l1)
         graph.add_node(int(j), label=l2)
         graph.add_edge(int(i), int(j), label=e)
