@@ -24,10 +24,10 @@ class ReducedGraphgenGenerator(Generator):
         model = model.to(device)
         mapper = self.dataset.mapper
 
-        dim_ts_out = mapper['max_nodes'] + 1
+        dim_ts_out = self.max_nodes + 1
         dim_tok_out  = len(mapper['reduced_forward']) + 1
         dim_input = 2 * dim_ts_out + dim_tok_out
-        max_edges = mapper['max_edges']
+        max_edges = self.max_edges + 10
         pred_size = 3
 
         batch_size = self.batch_size

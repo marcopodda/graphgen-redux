@@ -10,6 +10,10 @@ class Generator(BaseModule):
         self.num_samples = 2560
         self.num_runs = 10 if dataset_name != "ENZYMES" else 64
         self.batch_size = 256 if dataset_name != "ENZYMES" else 40
+        self.max_nodes = self.dataset.mapper['max_nodes']
+        self.min_nodes = self.dataset.mapper['min_nodes']
+        self.max_edges = self.dataset.mapper['max_edges']
+        self.min_edges = self.dataset.mapper['min_edges']
 
     def generate(self, epoch, device):
         ckpt_path = list(self.dirs.ckpt.glob(f"epoch={epoch}-*.ckpt"))[0]
