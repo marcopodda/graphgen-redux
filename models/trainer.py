@@ -59,7 +59,7 @@ class Trainer(BaseModule):
 
     def train(self):
         logger = TensorBoardLogger(save_dir=self.dirs.exp, name="", version=self.dirs.logs.parts[-1])
-        ckpt_callback = ModelCheckpoint(filepath=self.dirs.ckpt, save_top_k=-1)
+        ckpt_callback = ModelCheckpoint(filepath=self.dirs.ckpt, save_last=True)
         time_elapsed_callback = TimeElapsedCallback(log_dir=self.dirs.logs)
 
         early_stop_callback = EarlyStopping(
