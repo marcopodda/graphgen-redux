@@ -7,6 +7,9 @@ class Generator(BaseModule):
     def __init__(self, model_name, root_dir, dataset_name, hparams, gpu):
         super().__init__(model_name, root_dir, dataset_name, hparams, gpu)
         self.dataset = self.dataset_class(dataset_name)
+        self.num_samples = 2560
+        self.num_runs = 10 if dataset_name != "ENZYMES" else 64
+        self.batch_size = 256 if dataset_name != "ENZYMES" else 40
 
     def generate(self, epoch, device):
         ckpt_path = list(self.dirs.ckpt.glob(f"epoch={epoch}-*.ckpt"))[0]

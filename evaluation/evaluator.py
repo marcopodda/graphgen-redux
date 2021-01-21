@@ -40,7 +40,7 @@ class Evaluator(BaseModule):
         self.graphs = load_pickle(DATA_DIR  / dataset_name / "graphs.pkl")
         self.indices = load_pickle(DATA_DIR / dataset_name / "splits.pkl")
         self.num_samples = 256 if dataset_name != "ENZYMES" else 40
-        self.num_runs = 1 if dataset_name != "ENZYMES" else 64
+        self.num_runs = 10 if dataset_name != "ENZYMES" else 64
 
     def evaluate(self, epoch):
         real_graphs = [self.graphs[i] for i in self.indices['test']]
