@@ -16,12 +16,12 @@ MODEL_CONFIG = {
     "graphgen": {
         "trainer": GraphgenTrainer,
         "generator": GraphgenGenerator,
-        "hparams": "hparams.yml"
+        "hparams": "hparams_graphgen.yml"
     },
     "reduced-graphgen": {
         "trainer": ReducedGraphgenTrainer,
         "generator": ReducedGraphgenGenerator,
-        "hparams": "hparams.yml"
+        "hparams": "hparams_reduced-graphgen.yml"
     },
     "graphrnn": {
         "trainer": GraphRNNTrainer,
