@@ -31,14 +31,13 @@ def command_parser():
 
     sub_generate = sub.add_parser('generate', help="Generation.")
     sub_generate.add_argument("--exp-path", help="Experiment path.")
-    sub_generate.add_argument("--epoch", help="Epoch to generate from.", type=int)
     sub_generate.add_argument("--gpu", default=None, help="GPU number.", type=int)
-    sub_generate.add_argument("--best", default=False, help="Use best validation epoch", action="store_true")
+    sub_generate.add_argument("--best", default=False, help="Use best validation epoch.", action="store_true")
     sub_generate.set_defaults(command='generate')
 
     sub_evaluate = sub.add_parser('evaluate', help="Evaluation.")
     sub_evaluate.add_argument("--exp-path", help="Experiment path.")
-    sub_evaluate.add_argument("--epoch", help="Epoch to evaluate.", type=int)
+    sub_evaluate.add_argument("--best", default=False, help="Use best validation epoch.", action="store_true")
     sub_evaluate.set_defaults(command='evaluate')
 
     return parser
@@ -65,8 +64,8 @@ if __name__ == "__main__":
         model_name = exp_path.parts[-1]
         generator_class = MODEL_CONFIG[model_name]["generator"]
         generator = generator_class.initialize(exp_path)
-        generator.generate(epoch=args.epoch, device=args.gpu, best=args.best)
+        generator.generate(best=args.best, device=args.gpu)
 
     elif args.command == "evaluate":
         evaluator = Evaluator.initialize(Path(args.exp_path))
-        evaluator.evaluate(epoch=args.epoch)
+        evaluator.evaluate(best=args.best)
