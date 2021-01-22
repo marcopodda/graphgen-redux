@@ -5,7 +5,7 @@ from core.utils import get_or_create_dir
 
 class Generator(BaseModule):
     def __init__(self, model_name, root_dir, dataset_name, epochs, hparams, gpu):
-        super().__init__(model_name, root_dir, dataset_name, hparams, gpu)
+        super().__init__(model_name, root_dir, dataset_name, epochs, hparams, gpu)
         self.dataset = self.dataset_class(dataset_name)
         self.num_samples = 2560
         self.num_runs = 10 if dataset_name != "ENZYMES" else 64
