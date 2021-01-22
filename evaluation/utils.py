@@ -4,7 +4,7 @@ from core.serialization import load_pickle
 
 
 def fmt_list(values):
-    return f"{mean(values)}({stdev(values):.3f})"
+    return f"{mean(values):.4f}({stdev(values):.3f})"
 
 
 def display_results(path):
@@ -17,7 +17,7 @@ def display_results(path):
     print(f"Edge count GEN:          {fmt_list(results['Edge count avg. pred'])}")
     print(f"MMD Degree:              {fmt_list(results['MMD Degree'])}")
     print(f"MMD Clustering:          {fmt_list(results['MMD Clustering'])}")
-    print(f"MMD NSPDK:               {fmt_list(results['MMD NSPDK'])}")
+    print(f"MMD NSPKD:               {fmt_list(results['MMD NSPKD'])}")
     print(f"MMD Node Labels:         {fmt_list(results['Node Labels'])}")
     print(f"MMD Node Labels:         {fmt_list(results['Edge Labels'])}")
     print(f"MMD Node Labels/Degrees: {fmt_list(results['Edge Labels'])}")
