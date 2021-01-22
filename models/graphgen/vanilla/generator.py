@@ -24,11 +24,11 @@ class GraphgenGenerator(Generator):
         model = model.to(device)
         mapper = self.dataset.mapper
 
-        dim_ts_out = mapper['max_nodes'] + 1
+        dim_ts_out = self.max_nodes + 1
         dim_vs_out  = len(mapper['node_forward']) + 1
         dim_e_out = len(mapper['edge_forward']) + 1
         dim_input = 2 * dim_ts_out + 2 * dim_vs_out + dim_e_out
-        max_edges = mapper['max_edges']
+        max_edges = self.max_edges * 2
         pred_size = 5
 
         batch_size = self.batch_size

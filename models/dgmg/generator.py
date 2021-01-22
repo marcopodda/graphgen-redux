@@ -31,18 +31,15 @@ class DGMGGenerator(Generator):
             nb = mapper['node_backward']
             eb = mapper['edge_backward']
             for sampled_graph in sampled_graphs:
-                graph = sampled_graph.to_networkx(
-                    node_attrs=['label'], edge_attrs=['label']).to_undirected()
+                graph = sampled_graph.to_networkx(node_attrs=['label'], edge_attrs=['label']).to_undirected()
 
                 labeled_graph = nx.Graph()
 
                 for v in graph.nodes():
-                    labeled_graph.add_node(
-                        v, label=nb[graph.nodes[v]['label'].item() - 1])
+                    labeled_graph.add_node(v, label=nb[graph.nodes[v]['label'].item() - 1])
 
                 for u, v in graph.edges():
-                    labeled_graph.add_edge(
-                        u, v, label=eb[graph.edges[u, v]['label'].item()])
+                    labeled_graph.add_edge(u, v, label=eb[graph.edges[u, v]['label'].item()])
 
                 # Take maximum connected component
                 if len(labeled_graph.nodes()) > 0:
