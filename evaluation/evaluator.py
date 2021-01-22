@@ -34,8 +34,8 @@ def print_stats(
 
 
 class Evaluator(BaseModule):
-    def __init__(self, model_name, root_dir, dataset_name, hparams, gpu):
-        super().__init__(model_name, root_dir, dataset_name, hparams, gpu)
+    def __init__(self, model_name, root_dir, dataset_name, epochs, hparams, gpu):
+        super().__init__(model_name, root_dir, dataset_name, epochs, hparams, gpu)
 
         self.graphs = load_pickle(DATA_DIR  / dataset_name / "graphs.pkl")
         self.indices = load_pickle(DATA_DIR / dataset_name / "splits.pkl")
