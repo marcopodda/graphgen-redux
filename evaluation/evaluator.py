@@ -114,6 +114,7 @@ class Evaluator(BaseModule):
             "Edge count avg. pred": edge_count_avg_pred,
             "MMD Degree": degree_mmd,
             "MMD Clustering": clustering_mmd,
+            "MMD Orbit": orbit_mmd,
             "MMD NSPDK": nspdk_mmd,
             "MMD Node labels": node_label_mmd,
             "MMD Edge labels": edge_label_mmd,
