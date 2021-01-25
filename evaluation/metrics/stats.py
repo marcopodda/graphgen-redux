@@ -357,7 +357,8 @@ def novelty(real_graphs, gen_graphs, temp_path, timeout):
 
     print('{} / {} predicted graphs do not have reference graphs as subgraphs'.format(len(unique2), len(calc2)))
 
-    novel = len(set(unique1).intersection(set(unique2)))
+    novel_idxs = set(unique1).intersection(set(unique2))
+    novel = len(novel_idxs)
     total_eval = len(set(calc1).intersection(set(calc2)))
 
     print('{} / {} graphs for sure novel'.format(novel, total_eval))
@@ -374,7 +375,7 @@ def novelty(real_graphs, gen_graphs, temp_path, timeout):
         os.remove(res_path)
     except OSError as e:
         print(e)
-    return novelty_score
+    return novelty_score, novel_idxs
 
 
 def uniqueness(gen_graphs, temp_path, timeout):
@@ -393,11 +394,12 @@ def uniqueness(gen_graphs, temp_path, timeout):
             pass
 
     with open(res_path, 'r') as outf:
-        unique1 = []
+        unique1, unique_idxs = [], []
         lines = outf.readlines()
-        for line in lines:
+        for i, line in enumerate(lines):
             unq = line.strip().split()
             if unq[1] == '1':
+                unique_idxs.append(int(unq[0]))
                 unique1.append(graph_pred_indices[int(unq[0])])
 
     print('{} / {} predicted graphs are unique'.format(len(unique1), len(lines)))
@@ -413,4 +415,4 @@ def uniqueness(gen_graphs, temp_path, timeout):
     except OSError as e:
         print(e)
 
-    return uniqueness_score
+    return uniqueness_score, unique_idxs

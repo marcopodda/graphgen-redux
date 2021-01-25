@@ -49,8 +49,11 @@ class Evaluator(BaseModule):
         train_graphs = [self.graphs[i] for i in self.indices['train']]
         tmp_dir = "."
 
-        novelty_score = stats.novelty(train_graphs, gen_graphs, tmp_dir, timeout=60)
-        uniqueness_score = stats.uniqueness(gen_graphs, tmp_dir, timeout=120)
+        novelty_score, novel_idxs = stats.novelty(train_graphs, gen_graphs, tmp_dir, timeout=60)
+        uniqueness_score, unique_idxs = stats.uniqueness(gen_graphs, tmp_dir, timeout=120)
+
+        idxs = set(novel_idxs).intersection(unique_idxs)
+        gen_graphs = [gen_graphs[i] for i in idxs]
 
         node_count_avg_ref, node_count_avg_pred = [], []
         edge_count_avg_ref, edge_count_avg_pred = [], []
