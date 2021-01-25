@@ -67,11 +67,11 @@ class Evaluator(BaseModule):
             gen_sample = gen_graphs[i*num_samples:i*num_samples+num_samples]
 
             print("Avg. node count...")
-            node_count_avg_ref.append(mean([G.number_of_nodes() for G in real_sample]))
+            node_count_avg_ref.append(mean([G.number_of_nodes() for G in train_graphs]))
             node_count_avg_pred.append(mean([G.number_of_nodes() for G in gen_sample]))
 
             print("Avg. edge count...")
-            edge_count_avg_ref.append(mean([G.number_of_edges() for G in real_sample]))
+            edge_count_avg_ref.append(mean([G.number_of_edges() for G in train_graphs]))
             edge_count_avg_pred.append(mean([G.number_of_edges() for G in gen_sample]))
 
             print("Degree distribution...")
