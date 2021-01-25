@@ -18,10 +18,10 @@ class Model(nn.Module):
 
         self.dim_ts_out = mapper['max_nodes'] + 1
         self.dim_tok_out  = len(mapper['reduced_forward']) + 1
-        self.dim_input = 128*3 # 2 * self.dim_ts_out + self.dim_tok_out
+        self.dim_input = 128 * 3 # 2 * self.dim_ts_out + self.dim_tok_out
 
-        self.ts_embed = nn.Embedding(self.dim_ts_out + 1, 128)
-        self.tok_embed = nn.Embedding(self.dim_tok_out + 1, 128)
+        self.ts_embed = nn.Embedding(self.dim_ts_out + 1, 128, padding_idx=self.dim_ts_out)
+        self.tok_embed = nn.Embedding(self.dim_tok_out + 1, 128, padding_idx=self.dim_tok_out)
 
         self.rnn = LSTM(
             input_size=self.dim_input,
@@ -67,7 +67,8 @@ class Model(nn.Module):
         x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 1)[:, :, :-1]
         t2_emb = self.ts_embed(t2)
         x_tok = F.one_hot(tok, num_classes=self.dim_tok_out + 1)[:, :, :-1]
-        tok_emb = self.ts_embed(tok)
+        tok_emb = self.tok_embed(tok)
+
 
         x = torch.cat((t1_emb, t2_emb, tok_emb), dim=2).float()
         y = torch.cat((x_t1, x_t2, x_tok), dim=2).float()
