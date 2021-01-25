@@ -57,9 +57,9 @@ class ReducedGraphgenGenerator(Generator):
 
                 rnn_input = torch.cat([t1_emb, t2_emb, tok_emb], dim=-1).view(batch_size, 1, -1)
 
-                pred[:, i, 0] = t1_sample.item()
-                pred[:, i, 1] = t2_sample.item()
-                pred[:, i, 2] = tok_sample.item()
+                pred[:, i, 0] = t1_sample
+                pred[:, i, 1] = t2_sample
+                pred[:, i, 2] = tok_sample
 
             tb = mapper['reduced_backward']
 
