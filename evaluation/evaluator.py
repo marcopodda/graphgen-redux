@@ -46,9 +46,10 @@ class Evaluator(BaseModule):
         best = "best" if best else "last"
         gen_graphs = load_pickle(self.dirs.samples / f"samples_{best}.pkl")
         real_graphs = [self.graphs[i] for i in self.indices['test']]
+        train_graphs = [self.graphs[i] for i in self.indices['train']]
         tmp_dir = "."
 
-        novelty_score = stats.novelty(real_graphs, gen_graphs, tmp_dir, timeout=60)
+        novelty_score = stats.novelty(train_graphs, gen_graphs, tmp_dir, timeout=60)
         uniqueness_score = stats.uniqueness(gen_graphs, tmp_dir, timeout=120)
 
         node_count_avg_ref, node_count_avg_pred = [], []
