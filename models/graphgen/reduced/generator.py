@@ -53,7 +53,7 @@ class ReducedGraphgenGenerator(Generator):
 
                 t1_emb = model.ts_embed(t1_sample)
                 t2_emb = model.ts_embed(t2_sample)
-                tok_emb = model.ts_embed(tok_sample)
+                tok_emb = model.tok_embed(tok_sample)
 
                 rnn_input = torch.cat([t1_emb, t2_emb, tok_emb], dim=-1).view(batch_size, 1, -1)
 
