@@ -18,7 +18,7 @@ class Model(nn.Module):
 
         self.dim_ts_out = mapper['max_nodes']
         self.dim_tok_out  = len(mapper['reduced_forward']) + 1
-        self.dim_input = 2 * (self.dim_ts_out+1) + self.dim_tok_out
+        self.dim_input = 2 * (self.dim_ts_out + 1) + self.dim_tok_out
 
         self.rnn = LSTM(
             input_size=self.dim_input,
@@ -77,15 +77,14 @@ class Model(nn.Module):
         rnn_output = self.rnn(rnn_input, x_len=lengths + 1)
 
         # Evaluating dfscode tuple
-        out_t1 = self.output_t1(rnn_output)
-        out_t2 = self.output_t2(rnn_output)
-        out_tok = self.output_tok(rnn_output)
+        out_t1 = self.output_t1(rnn_output).permute(0, 2, 1)
+        out_t2 = self.output_t2(rnn_output).permute(0, 2, 1)
+        out_tok = self.output_tok(rnn_output).permute(0, 2, 1)
         # y_pred = torch.cat([out_t1, out_t2, out_tok], dim=2)
 
         # # Cleaning the padding i.e setting it to zero
         # y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
         # y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
-
         loss_t1 = F.nll_loss(out_t1, t1, ignore_index=self.dim_ts_out + 1)
         loss_t2 = F.nll_loss(out_t2, t2, ignore_index=self.dim_ts_out + 1)
         loss_tok = F.nll_loss(out_tok, tok, ignore_index=self.dim_tok_out)
