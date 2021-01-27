@@ -26,7 +26,7 @@ class ReducedGraphgenGenerator(Generator):
 
         dim_ts_out = self.max_nodes + 1
         dim_tok_out  = len(mapper['reduced_forward']) + 1
-        dim_input = 128 * 3 #2 * dim_ts_out + dim_tok_out
+        dim_input = 2 * dim_ts_out + dim_tok_out
         max_edges = self.max_edges
         pred_size = 3
 
@@ -51,15 +51,15 @@ class ReducedGraphgenGenerator(Generator):
                 t2_sample = Categorical(t2).sample()
                 tok_sample = Categorical(tok).sample()
 
-                t1_emb = model.ts_embed(t1_sample)
-                t2_emb = model.ts_embed(t2_sample)
-                tok_emb = model.tok_embed(tok_sample)
-
-                rnn_input = torch.cat([t1_emb, t2_emb, tok_emb], dim=-1).view(batch_size, 1, -1)
-
                 pred[:, i, 0] = t1_sample
                 pred[:, i, 1] = t2_sample
                 pred[:, i, 2] = tok_sample
+
+                x_t1 = F.one_hot(t1_sample, num_classes=dim_ts_out)
+                x_t2 = F.one_hot(t2_sample, num_classes=dim_ts_out)
+                x_tok = F.one_hot(tok_sample, num_classes=dim_tok_out)
+
+                rnn_input = torch.cat([x_t1, x_t2, x_tok], dim=-1).view(batch_size, 1, -1)
 
             tb = mapper['reduced_backward']
 

@@ -50,19 +50,24 @@ class GraphgenGenerator(Generator):
                 e = model.output_e(rnn_output).view(batch_size, -1)
                 v2 = model.output_v2(rnn_output).view(batch_size, -1)
 
-                t1 = F.one_hot(Categorical(t1).sample(), num_classes=dim_ts_out)
-                t2 = F.one_hot(Categorical(t2).sample(), num_classes=dim_ts_out)
-                v1 = F.one_hot(Categorical(v1).sample(), num_classes=dim_vs_out)
-                e = F.one_hot(Categorical(e).sample(), num_classes=dim_e_out)
-                v2 = F.one_hot(Categorical(v2).sample(), num_classes=dim_vs_out)
+                t1 = Categorical(t1).sample()
+                t2 = Categorical(t2).sample()
+                v1 = Categorical(v1).sample()
+                e = Categorical(e).sample()
+                v2 = Categorical(v2).sample()
 
-                rnn_input = torch.cat([t1, t2, v1, e, v2], dim=-1).view(batch_size, 1, -1).float()
+                rnn_input = torch.zeros((batch_size, 1, dim_input), device=device)
+                rnn_input[torch.arange(batch_size), 0, t1] = 1
+                rnn_input[torch.arange(batch_size), 0, dim_ts_out + t2] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + 1 + v1] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + 1 + dim_vs_out + e] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + 1 + dim_vs_out + dim_e_out + v2] = 1
 
-                pred[:, i, 0] = t1.argmax(dim=-1)
-                pred[:, i, 1] = t2.argmax(dim=-1)
-                pred[:, i, 2] = v1.argmax(dim=-1)
-                pred[:, i, 3] = e.argmax(dim=-1)
-                pred[:, i, 4] = v2.argmax(dim=-1)
+                pred[:, i, 0] = t1
+                pred[:, i, 1] = t2
+                pred[:, i, 2] = v1
+                pred[:, i, 3] = e
+                pred[:, i, 4] = v2
 
             nb = mapper['node_backward']
             eb = mapper['edge_backward']
