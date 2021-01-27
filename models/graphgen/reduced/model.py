@@ -30,13 +30,13 @@ class Model(nn.Module):
         self.output_t1 = SoftmaxMLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
-            output_size=self.dim_ts_out,
+            output_size=self.dim_ts_out + 1,
             dropout=hparams.dropout)
 
         self.output_t2 = SoftmaxMLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
-            output_size=self.dim_ts_out,
+            output_size=self.dim_ts_out + 1,
             dropout=hparams.dropout)
 
         self.output_tok = SoftmaxMLP(
