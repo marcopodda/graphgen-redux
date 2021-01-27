@@ -18,7 +18,7 @@ class Model(nn.Module):
         self.max_nodes = mapper['max_nodes']
         self.len_node_vec  = len(mapper['node_forward']) + 1
         self.len_edge_vec = len(mapper['edge_forward']) + 1
-        self.feature_len = 2 * self.max_nodes + 2 * self.len_node_vec + self.len_edge_vec
+        self.feature_len = 2 * (self.max_nodes + 1) + 2 * self.len_node_vec + self.len_edge_vec
 
         self.rnn = LSTM(
             input_size=self.feature_len,
