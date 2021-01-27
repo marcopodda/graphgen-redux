@@ -87,7 +87,7 @@ class Model(nn.Module):
         rnn_input = torch.cat([zeros, x_target[:, :-1, :]], dim=1)
 
         # Forward propogation
-        rnn_output = self.rnn(rnn_input, input_len=x_len + 1)
+        rnn_output = self.rnn(rnn_input, x_len=x_len + 1)
 
         # Evaluating dfscode tuple
         out_t1 = self.output_t1(rnn_output)
