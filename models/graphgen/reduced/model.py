@@ -7,7 +7,7 @@ from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
 from models.trainer import Trainer
 
-from models.layers import LSTM, SoftmaxMLP
+from models.layers import LSTM, MLP
 from models.wrapper import BaseWrapper
 from models.graphgen.reduced.data import Dataset, Loader
 
@@ -27,19 +27,19 @@ class Model(nn.Module):
             num_layers=hparams.num_layers,
             dropout=hparams.dropout)
 
-        self.output_t1 = SoftmaxMLP(
+        self.output_t1 = MLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_ts_out + 1,
             dropout=hparams.dropout)
 
-        self.output_t2 = SoftmaxMLP(
+        self.output_t2 = MLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_ts_out + 1,
             dropout=hparams.dropout)
 
-        self.output_tok = SoftmaxMLP(
+        self.output_tok = MLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_tok_out,
@@ -85,9 +85,9 @@ class Model(nn.Module):
         # # Cleaning the padding i.e setting it to zero
         # y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
         # y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
-        loss_t1 = F.nll_loss(out_t1, t1, ignore_index=self.dim_ts_out + 1)
-        loss_t2 = F.nll_loss(out_t2, t2, ignore_index=self.dim_ts_out + 1)
-        loss_tok = F.nll_loss(out_tok, tok, ignore_index=self.dim_tok_out)
+        loss_t1 = F.cross_entropy(out_t1, t1, ignore_index=self.dim_ts_out + 1)
+        loss_t2 = F.cross_entropy(out_t2, t2, ignore_index=self.dim_ts_out + 1)
+        loss_tok = F.cross_entropy(out_tok, tok, ignore_index=self.dim_tok_out)
 
         loss = loss_t1 + loss_t2 + loss_tok
         return -loss
