@@ -63,7 +63,7 @@ class Model(nn.Module):
         x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 1)[:, :, :-1]
         x_tok = F.one_hot(tok, num_classes=self.dim_tok_out + 1)[:, :, :-1]
 
-        y = torch.cat((x_t1, x_t2, x_tok), dim=2).float()
+        y = torch.cat((x_t1, x_t2, x_tok), dim=2).contiguous().float()
 
         # Init rnn
         self.rnn.hidden = self.rnn.init_hidden(batch_size=batch_size, device=y.device)
