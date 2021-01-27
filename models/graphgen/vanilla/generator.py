@@ -24,10 +24,15 @@ class GraphgenGenerator(Generator):
         model = model.to(device)
         mapper = self.dataset.mapper
 
-        dim_ts_out = self.max_nodes + 1
-        dim_vs_out  = len(mapper['node_forward']) + 1
-        dim_e_out = len(mapper['edge_forward']) + 1
-        dim_input = 2 * dim_ts_out + 2 * dim_vs_out + dim_e_out
+        max_nodes = mapper['max_nodes']
+        len_node_vec,  = len(mapper['node_forward']) + 1,
+        len_edge_vec = len(mapper['edge_forward']) + 1
+        feature_len = 2 * (max_nodes + 1) + 2 * len_node_vec + len_edge_vec
+
+        # dim_ts_out = self.max_nodes + 1
+        # dim_vs_out  = len(mapper['node_forward']) + 1
+        # dim_e_out = len(mapper['edge_forward']) + 1
+        # dim_input = 2 * dim_ts_out + 2 * dim_vs_out + dim_e_out
         max_edges = self.max_edges
         pred_size = 5
 
@@ -37,7 +42,7 @@ class GraphgenGenerator(Generator):
 
         for _ in range(num_runs):
             model.rnn.hidden = model.rnn.init_hidden(batch_size=batch_size, device=device)
-            rnn_input = torch.zeros((batch_size, 1, dim_input), device=device)
+            rnn_input = torch.zeros((batch_size, 1, feature_len), device=device)
             pred = torch.zeros((batch_size, max_edges, pred_size), device=device)
 
             for i in range(max_edges):
@@ -56,12 +61,12 @@ class GraphgenGenerator(Generator):
                 e = Categorical(e).sample()
                 v2 = Categorical(v2).sample()
 
-                rnn_input = torch.zeros((batch_size, 1, dim_input), device=device)
+                rnn_input = torch.zeros((batch_size, 1, feature_len), device=device)
                 rnn_input[torch.arange(batch_size), 0, t1] = 1
-                rnn_input[torch.arange(batch_size), 0, dim_ts_out + t2] = 1
-                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + v1] = 1
-                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + dim_vs_out + e] = 1
-                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + dim_vs_out + dim_e_out + v2] = 1
+                rnn_input[torch.arange(batch_size), 0, max_edges + t2] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * max_edges + 2 + v1] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * max_edges + 2 + len_node_vec + e] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * max_edges + 2 + len_node_vec + len_edge_vec + v2] = 1
 
                 pred[:, i, 0] = t1
                 pred[:, i, 1] = t2
@@ -75,11 +80,11 @@ class GraphgenGenerator(Generator):
             for i in range(batch_size):
                 dfscode = []
                 for j in range(max_edges):
-                    if (pred[i, j, 0] == dim_ts_out - 1 or
-                        pred[i, j, 1] == dim_ts_out - 1 or
-                        pred[i, j, 2] == dim_vs_out - 1 or
-                        pred[i, j, 3] == dim_e_out - 1 or
-                        pred[i, j, 4] == dim_vs_out - 1):
+                    if (pred[i, j, 0] == max_nodes or
+                        pred[i, j, 1] == max_nodes or
+                        pred[i, j, 2] == len_node_vec - 1 or
+                        pred[i, j, 3] == len_edge_vec - 1 or
+                        pred[i, j, 4] == len_node_vec - 1):
                         break
 
                     dfscode.append((
