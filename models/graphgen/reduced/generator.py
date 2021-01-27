@@ -55,9 +55,9 @@ class ReducedGraphgenGenerator(Generator):
                 pred[:, i, 1] = t2_sample
                 pred[:, i, 2] = tok_sample
 
-                x_t1 = F.one_hot(t1_sample, num_classes=dim_ts_out)
-                x_t2 = F.one_hot(t2_sample, num_classes=dim_ts_out)
-                x_tok = F.one_hot(tok_sample, num_classes=dim_tok_out)
+                x_t1 = F.one_hot(t1_sample, num_classes=dim_ts_out).float()
+                x_t2 = F.one_hot(t2_sample, num_classes=dim_ts_out).float()
+                x_tok = F.one_hot(tok_sample, num_classes=dim_tok_out).float()
 
                 rnn_input = torch.cat([x_t1, x_t2, x_tok], dim=-1).view(batch_size, 1, -1)
 
