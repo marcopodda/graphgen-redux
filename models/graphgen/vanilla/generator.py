@@ -51,11 +51,11 @@ class GraphgenGenerator(Generator):
                 e = model.output_e(rnn_output).view(batch_size, -1)
                 v2 = model.output_v2(rnn_output).view(batch_size, -1)
 
-                t1 = Categorical(logits=t1).sample()
-                t2 = Categorical(logits=t2).sample()
-                v1 = Categorical(logits=v1).sample()
-                e = Categorical(logits=e).sample()
-                v2 = Categorical(logits=v2).sample()
+                t1 = Categorical(t1).sample()
+                t2 = Categorical(t2).sample()
+                v1 = Categorical(v1).sample()
+                e = Categorical(e).sample()
+                v2 = Categorical(v2).sample()
 
                 rnn_input = torch.zeros((batch_size, 1, feature_len), device=device)
                 rnn_input[torch.arange(batch_size), 0, t1] = 1
