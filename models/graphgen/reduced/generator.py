@@ -56,9 +56,9 @@ class ReducedGraphgenGenerator(Generator):
                 pred[:, i, 2] = tok_sample
 
                 rnn_input = torch.zeros((batch_size, 1, dim_input), device=device)
-                rnn_input[torch.arange(batch_size), 0, t1] = 1
-                rnn_input[torch.arange(batch_size), 0, max_edges + t2] = 1
-                rnn_input[torch.arange(batch_size), 0, 2 * max_edges + 2 + tok] = 1
+                rnn_input[torch.arange(batch_size), 0, t1_sample] = 1
+                rnn_input[torch.arange(batch_size), 0, max_edges + t2_sample] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * max_edges + 2 + tok_sample] = 1
 
             tb = mapper['reduced_backward']
 
