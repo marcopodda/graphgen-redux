@@ -86,7 +86,9 @@ class Model(nn.Module):
         y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
         y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
 
-        return F.binary_cross_entropy(y_pred, y)
+        return F.binary_cross_entropy(y_pred.view(-1), y.view(-1)) # , reduction='none')
+        # loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
+        # return loss
 
 
 class ReducedGraphgen(BaseWrapper):
