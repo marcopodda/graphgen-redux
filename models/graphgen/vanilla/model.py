@@ -59,7 +59,7 @@ class Model(nn.Module):
 
     def forward(self, batch):
         x_len_unsorted = batch['len']
-        x_len_max = x_len_unsorted.max() + 1
+        x_len_max = x_len_unsorted.max()
         batch_size = x_len_unsorted.size(0)
 
         # sort input for packing variable length sequences
