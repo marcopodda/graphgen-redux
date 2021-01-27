@@ -90,7 +90,7 @@ class Model(nn.Module):
         loss_tok = F.nll_loss(out_tok, tok, ignore_index=self.dim_tok_out)
 
         loss = loss_t1 + loss_t2 + loss_tok
-        return loss
+        return -loss
 
         # loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
         # loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
