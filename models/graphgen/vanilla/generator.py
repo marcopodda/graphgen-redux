@@ -59,9 +59,9 @@ class GraphgenGenerator(Generator):
                 rnn_input = torch.zeros((batch_size, 1, dim_input), device=device)
                 rnn_input[torch.arange(batch_size), 0, t1] = 1
                 rnn_input[torch.arange(batch_size), 0, dim_ts_out + t2] = 1
-                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + 1 + v1] = 1
-                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + 1 + dim_vs_out + e] = 1
-                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + 1 + dim_vs_out + dim_e_out + v2] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + v1] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + dim_vs_out + e] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * dim_ts_out + dim_vs_out + dim_e_out + v2] = 1
 
                 pred[:, i, 0] = t1
                 pred[:, i, 1] = t2
