@@ -16,9 +16,9 @@ class Model(nn.Module):
     def __init__(self, hparams, mapper):
         super().__init__()
 
-        self.dim_ts_out = mapper['max_nodes'] + 1
+        self.dim_ts_out = mapper['max_nodes']
         self.dim_tok_out  = len(mapper['reduced_forward']) + 1
-        self.dim_input = 2 * self.dim_ts_out + self.dim_tok_out
+        self.dim_input = 2 * (self.dim_ts_out+1) + self.dim_tok_out
 
         self.rnn = LSTM(
             input_size=self.dim_input,
@@ -59,8 +59,8 @@ class Model(nn.Module):
         tok = torch.index_select(batch['tok'][:, :max_length], 0, sort_indices)
 
         # One-hot encode sequences
-        x_t1 = F.one_hot(t1, num_classes=self.dim_ts_out + 1)[:, :, :-1]
-        x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 1)[:, :, :-1]
+        x_t1 = F.one_hot(t1, num_classes=self.dim_ts_out + 2)[:, :, :-1]
+        x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 2)[:, :, :-1]
         x_tok = F.one_hot(tok, num_classes=self.dim_tok_out + 1)[:, :, :-1]
 
         y = torch.cat((x_t1, x_t2, x_tok), dim=2).float()

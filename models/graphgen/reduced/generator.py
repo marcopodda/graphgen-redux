@@ -24,9 +24,9 @@ class ReducedGraphgenGenerator(Generator):
         model = model.to(device)
         mapper = self.dataset.mapper
 
-        dim_ts_out = self.max_nodes + 1
+        dim_ts_out = self.max_nodes
         dim_tok_out  = len(mapper['reduced_forward']) + 1
-        dim_input = 2 * dim_ts_out + dim_tok_out
+        dim_input = 2 * (dim_ts_out+1) + dim_tok_out
         max_edges = self.max_edges
         pred_size = 3
 
@@ -55,19 +55,18 @@ class ReducedGraphgenGenerator(Generator):
                 pred[:, i, 1] = t2_sample
                 pred[:, i, 2] = tok_sample
 
-                x_t1 = F.one_hot(t1_sample, num_classes=dim_ts_out).float()
-                x_t2 = F.one_hot(t2_sample, num_classes=dim_ts_out).float()
-                x_tok = F.one_hot(tok_sample, num_classes=dim_tok_out).float()
-
-                rnn_input = torch.cat([x_t1, x_t2, x_tok], dim=-1).view(batch_size, 1, -1)
+                rnn_input = torch.zeros((batch_size, 1, dim_input), device=device)
+                rnn_input[torch.arange(batch_size), 0, t1] = 1
+                rnn_input[torch.arange(batch_size), 0, max_edges + t2] = 1
+                rnn_input[torch.arange(batch_size), 0, 2 * max_edges + 2 + tok] = 1
 
             tb = mapper['reduced_backward']
 
             for i in range(batch_size):
                 dfscode = []
                 for j in range(max_edges):
-                    if (pred[i, j, 0] == dim_ts_out - 1 or
-                        pred[i, j, 1] == dim_ts_out - 1 or
+                    if (pred[i, j, 0] == dim_ts_out or
+                        pred[i, j, 1] == dim_ts_out or
                         pred[i, j, 2] == dim_tok_out - 1):
                         break
 
