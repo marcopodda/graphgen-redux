@@ -29,10 +29,6 @@ class GraphgenGenerator(Generator):
         len_edge_vec = len(mapper['edge_forward']) + 1
         feature_len = 2 * (max_nodes + 1) + 2 * len_node_vec + len_edge_vec
 
-        # dim_ts_out = self.max_nodes + 1
-        # dim_vs_out  = len(mapper['node_forward']) + 1
-        # dim_e_out = len(mapper['edge_forward']) + 1
-        # dim_input = 2 * dim_ts_out + 2 * dim_vs_out + dim_e_out
         max_edges = self.max_edges
         pred_size = 5
 

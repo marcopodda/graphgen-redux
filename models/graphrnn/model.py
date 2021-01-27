@@ -144,13 +144,20 @@ class Model(nn.Module):
         x_edge = torch.cat((edge_mat, torch.zeros(sum(x_len), 1, self.num_edge_features, device=x.device)), dim=1)
         x_edge[torch.arange(sum(x_len)), x_edge_len - 1, self.num_edge_features - 1] = 1
 
-        loss1 = F.binary_cross_entropy(x_pred_node, x_node, reduction='sum')
-        loss2 = F.binary_cross_entropy(x_pred_edge, x_edge, reduction='sum')
+        loss1 = F.binary_cross_entropy(x_pred_node, x_node, reduction='none')
+        loss1 = torch.mean(torch.sum(loss1, dim=[1, 2]) / (x_len.float() + 1))
 
-        # Avg (node prediction + edge prediction) error per example
-        loss = (loss1 + loss2) / batch_size
+        loss2 = F.binary_cross_entropy(x_pred_node, x_node, reduction='none')
+        loss2 = torch.mean(torch.sum(loss2, dim=[1, 2]) / (x_len.float() + 1))
 
-        return loss
+        return loss1 + loss2
+
+        # loss2 = F.binary_cross_entropy(x_pred_edge, x_edge, reduction='none')
+
+        # # Avg (node prediction + edge prediction) error per example
+        # loss = (loss1 + loss2) / batch_size
+
+        # return loss
 
 
 class GraphRNN(BaseWrapper):
