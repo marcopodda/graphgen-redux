@@ -80,15 +80,22 @@ class Model(nn.Module):
         out_t1 = self.output_t1(rnn_output)
         out_t2 = self.output_t2(rnn_output)
         out_tok = self.output_tok(rnn_output)
-        y_pred = torch.cat([out_t1, out_t2, out_tok], dim=2)
+        # y_pred = torch.cat([out_t1, out_t2, out_tok], dim=2)
 
-        # Cleaning the padding i.e setting it to zero
-        y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
-        y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
+        # # Cleaning the padding i.e setting it to zero
+        # y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
+        # y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
 
-        loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
-        loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
+        loss_t1 = F.nll_loss(out_t1, t1, ignore_index=self.dim_ts_out + 1)
+        loss_t2 = F.nll_loss(out_t2, t2, ignore_index=self.dim_ts_out + 1)
+        loss_tok = F.nll_loss(out_tok, tok, ignore_index=self.dim_tok_out)
+
+        loss = loss_t1 + loss_t2 + loss_tok
         return loss
+
+        # loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
+        # loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
+        # return loss
 
 
 class ReducedGraphgen(BaseWrapper):
