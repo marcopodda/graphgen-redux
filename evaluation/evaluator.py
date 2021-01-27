@@ -45,7 +45,10 @@ class Evaluator(BaseModule):
     def evaluate(self, best):
         best = "best" if best else "last"
         gen_graphs = load_pickle(self.dirs.samples / f"samples_{best}.pkl")
+
         real_graphs = [self.graphs[i] for i in self.indices['test']]
+        random.shuffle(real_graphs)
+
         train_graphs = [self.graphs[i] for i in self.indices['train']]
         tmp_dir = "."
 
