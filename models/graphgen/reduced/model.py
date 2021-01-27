@@ -63,7 +63,7 @@ class Model(nn.Module):
         x_t2 = F.one_hot(t2, num_classes=self.dim_ts_out + 1)[:, :, :-1]
         x_tok = F.one_hot(tok, num_classes=self.dim_tok_out + 1)[:, :, :-1]
 
-        y = torch.cat((x_t1, x_t2, x_tok), dim=2).contiguous().float()
+        y = torch.cat((x_t1, x_t2, x_tok), dim=2).float()
 
         # Init rnn
         self.rnn.hidden = self.rnn.init_hidden(batch_size=batch_size, device=y.device)
@@ -86,9 +86,9 @@ class Model(nn.Module):
         y_pred = pack_padded_sequence(y_pred, lengths + 1, batch_first=True)
         y_pred, _ = pad_packed_sequence(y_pred, batch_first=True)
 
-        return F.binary_cross_entropy(y_pred.view(-1), y.view(-1)) # , reduction='none')
-        # loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
-        # return loss
+        loss_sum = F.binary_cross_entropy(y_pred, y, reduction='none')
+        loss = torch.mean(torch.sum(loss_sum, dim=[1, 2]) / (lengths.float() + 1))
+        return loss
 
 
 class ReducedGraphgen(BaseWrapper):
