@@ -47,9 +47,9 @@ class ReducedGraphgenGenerator(Generator):
                 t2 = model.output_t2(rnn_output).view(batch_size, -1)
                 tok = model.output_tok(rnn_output).view(batch_size, -1)
 
-                t1_sample = Categorical(logits=t1).sample()
-                t2_sample = Categorical(logits=t2).sample()
-                tok_sample = Categorical(logits=tok).sample()
+                t1_sample = Categorical(t1).sample()
+                t2_sample = Categorical(t2).sample()
+                tok_sample = Categorical(tok).sample()
 
                 pred[:, i, 0] = t1_sample
                 pred[:, i, 1] = t2_sample
