@@ -17,7 +17,7 @@ def display_results(path):
     print(f"Edge count GEN:          {fmt_list(results['Edge count avg. pred'])}")
     print(f"MMD Degree:              {fmt_list(results['MMD Degree'])}")
     print(f"MMD Clustering:          {fmt_list(results['MMD Clustering'])}")
-    print(f"MMD Orbits:              {fmt_list(results['MMD Orbits'])}")
+    print(f"MMD Orbits:              {fmt_list(results['MMD Orbit'])}")
     print(f"MMD NSPDK:               {fmt_list(results['MMD NSPDK'])}")
     print(f"MMD Node Labels:         {fmt_list(results['MMD Node labels'])}")
     print(f"MMD Node Labels:         {fmt_list(results['MMD Edge labels'])}")
