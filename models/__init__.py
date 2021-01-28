@@ -3,7 +3,7 @@ from models.graphgen.generator import ReducedGraphgenGenerator
 
 
 MODEL_CONFIG = {
-    "reduced-graphgen": {
+    "graphgen-redux": {
         "trainer": ReducedGraphgenTrainer,
         "generator": ReducedGraphgenGenerator,
         "hparams": "hparams.yml"

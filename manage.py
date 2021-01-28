@@ -22,7 +22,7 @@ def command_parser():
     sub_preprocess.set_defaults(command='preprocess')
 
     sub_train = sub.add_parser('train', help="Training.")
-    sub_train.add_argument("--model-name", choices=MODEL_CONFIG.keys(), default="reduced-graphgen")
+    sub_train.add_argument("--model-name", choices=MODEL_CONFIG.keys(), default="graphgen-redux")
     sub_train.add_argument("--dataset-name", choices=DATASETS, default="cora")
     sub_train.add_argument("--epochs", type=int, default=50)
     sub_train.add_argument("--root-dir", default="RESULTS", help="Output folder.")
