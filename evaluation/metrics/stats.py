@@ -66,8 +66,7 @@ def node_label_stats(graph_ref_list, graph_pred_list):
     sample_pred = []
 
     # in case an empty graph is generated
-    graph_pred_list = [
-        G for G in graph_pred_list if not G.number_of_nodes() == 0]
+    graph_pred_list = [G for G in graph_pred_list if not G.number_of_nodes() == 0]
 
     start = datetime.now()
 
@@ -135,8 +134,7 @@ def edge_label_stats(graph_ref_list, graph_pred_list):
 
 def clustering_worker(G, bins):
     clustering_coeffs_list = list(nx.clustering(G).values())
-    hist, _ = np.histogram(
-        clustering_coeffs_list, bins=bins, range=(0.0, 1.0), density=False)
+    hist, _ = np.histogram(clustering_coeffs_list, bins=bins, range=(0.0, 1.0), density=False)
     return hist
 
 
@@ -178,8 +176,7 @@ def orca(graph):
     tmp_fname = tempfile.NamedTemporaryFile().name
 
     f = open(tmp_fname, 'w')
-    f.write(str(graph.number_of_nodes()) + ' ' +
-            str(graph.number_of_edges()) + '\n')
+    f.write(str(graph.number_of_nodes()) + ' ' + str(graph.number_of_edges()) + '\n')
     for (u, v) in edge_list_reindexed(graph):
         f.write(str(u) + ' ' + str(v) + '\n')
     f.close()
@@ -256,8 +253,7 @@ def node_label_and_degree_joint_stats(graph_ref_list, graph_pred_list):
     for graph in graph_ref_list + graph_pred_list:
         for u in graph.nodes():
             if (graph.degree[u], graph.nodes[u]['label']) not in node_map:
-                node_map[(graph.degree[u], graph.nodes[u]
-                          ['label'])] = len(node_map)
+                node_map[(graph.degree[u], graph.nodes[u]['label'])] = len(node_map)
 
     P = Parallel(n_jobs=get_n_jobs(), verbose=0)
     sample_ref = P(delayed(node_label_and_degree_worker)(G, node_map) for i, G in enumerate(graph_ref_list))
