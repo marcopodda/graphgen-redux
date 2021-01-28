@@ -76,9 +76,9 @@ class Model(nn.Module):
         rnn_output = self.rnn(rnn_input, x_len=lengths + 1)
 
         # Evaluating dfscode tuple
-        out_t1 = self.output_t1(rnn_output).permute(0, 2, 1)
-        out_t2 = self.output_t2(rnn_output).permute(0, 2, 1)
-        out_tok = self.output_tok(rnn_output).permute(0, 2, 1)
+        out_t1 = self.output_t1(rnn_output)
+        out_t2 = self.output_t2(rnn_output)
+        out_tok = self.output_tok(rnn_output)
         y_pred = torch.cat([out_t1, out_t2, out_tok], dim=2)
 
         # # Cleaning the padding i.e setting it to zero
