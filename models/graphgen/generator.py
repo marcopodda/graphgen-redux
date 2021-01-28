@@ -7,8 +7,8 @@ from torch.distributions import Categorical
 from datasets.utils import graph_from_reduced_dfscode
 
 from models.generator import Generator
-from models.graphgen.reduced.data import Dataset
-from models.graphgen.reduced.model import ReducedGraphgen
+from models.graphgen.data import Dataset
+from models.graphgen.model import ReducedGraphgen
 
 class ReducedGraphgenGenerator(Generator):
     dataset_class = Dataset

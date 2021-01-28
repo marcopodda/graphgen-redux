@@ -1,15 +1,13 @@
 
 import torch
 from torch import nn
-from torch.nn import init
 from torch.nn import functional as F
-from torch.nn.utils.rnn import pad_packed_sequence, pack_padded_sequence
 
 from models.trainer import Trainer
 
 from models.layers import LSTM, MLP
 from models.wrapper import BaseWrapper
-from models.graphgen.reduced.data import Dataset, Loader
+from models.graphgen.data import Dataset, Loader
 
 
 class Model(nn.Module):
