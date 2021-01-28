@@ -6,7 +6,7 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 
 from models.trainer import Trainer
 
-from models.layers import LSTM, MLP
+from models.layers import LSTM, SoftmaxMLP
 from models.wrapper import BaseWrapper
 from models.graphgen.data import Dataset, Loader
 
@@ -26,19 +26,19 @@ class Model(nn.Module):
             num_layers=hparams.num_layers,
             dropout=hparams.dropout)
 
-        self.output_t1 = MLP(
+        self.output_t1 = SoftmaxMLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_ts_out + 1,
             dropout=hparams.dropout)
 
-        self.output_t2 = MLP(
+        self.output_t2 = SoftmaxMLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_ts_out + 1,
             dropout=hparams.dropout)
 
-        self.output_tok = MLP(
+        self.output_tok = SoftmaxMLP(
             input_size=hparams.rnn_hidden_size,
             hidden_size=hparams.mlp_hidden_size,
             output_size=self.dim_tok_out,
