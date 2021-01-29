@@ -19,9 +19,10 @@ class Generator(BaseModule):
         fname = f"epoch={epoch}.ckpt" if epoch else "last.ckpt"
         ckpt_path = self.dirs.ckpt / fname
         wrapper = self.load_wrapper(ckpt_path)
-        samples = self.get_samples(wrapper.model, device)
+        samples, dfscodes = self.get_samples(wrapper.model, device)
         fname = f"{epoch}" if epoch else "last"
         save_pickle(samples, self.dirs.samples / f"samples_{fname}.pkl")
+        save_pickle(dfscodes, self.dirs.samples / f"dfscodes_{fname}.pkl")
 
     def get_samples(self, model, device):
         raise NotImplementedError

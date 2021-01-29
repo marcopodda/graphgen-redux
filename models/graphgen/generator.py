@@ -33,6 +33,7 @@ class ReducedGraphgenGenerator(Generator):
         batch_size = self.batch_size
         num_runs = self.num_runs
         all_graphs = []
+        all_dfscodes = []
 
         for _ in range(num_runs):
             model.rnn.hidden = model.rnn.init_hidden(batch_size=batch_size, device=device)
@@ -76,6 +77,7 @@ class ReducedGraphgenGenerator(Generator):
                         tb[int(pred[i, j, 2].item())]
                     ))
 
+                all_dfscodes.append(dfscode)
                 graph = graph_from_reduced_dfscode(dfscode)
 
                 # Remove self loops
@@ -88,4 +90,4 @@ class ReducedGraphgenGenerator(Generator):
 
                 all_graphs.append(graph)
 
-        return all_graphs
+        return all_graphs, all_dfscodes
