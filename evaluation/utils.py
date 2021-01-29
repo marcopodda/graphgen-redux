@@ -11,6 +11,7 @@ def display_results(path):
     results = load_pickle(path)
     print(f"Uniqueness:              {results['Uniqueness']:.4f}")
     print(f"Novelty:                 {results['Novelty']:.4f}")
+    print(f"Validity:                {results['Validity']:.4f}")
     print(f"Node count REF:          {fmt_list(results['Node count avg. ref'])}")
     print(f"Node count GEN:          {fmt_list(results['Node count avg. pred'])}")
     print(f"Edge count REF:          {fmt_list(results['Edge count avg. ref'])}")
