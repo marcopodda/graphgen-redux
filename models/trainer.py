@@ -5,7 +5,7 @@ from argparse import Namespace
 import torch
 
 import pytorch_lightning as pl
-from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.loggers import TensorBoardLogger, WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, Callback
 
 from core.hparams import HParams
@@ -58,6 +58,7 @@ class Trainer(BaseModule):
         self.dump()
 
     def train(self):
+        # logger = WandbLogger(name="trial-1", save_dir=self.dirs.exp, project="graphgen-redux")
         logger = TensorBoardLogger(save_dir=self.dirs.exp, name="", version=self.dirs.logs.parts[-1])
         ckpt_callback = ModelCheckpoint(dirpath=self.dirs.ckpt, filename="{epoch}", period=50, save_top_k=-1)
         time_elapsed_callback = TimeElapsedCallback(log_dir=self.dirs.logs)
