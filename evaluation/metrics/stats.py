@@ -9,7 +9,7 @@ import numpy as np
 import networkx as nx
 
 import evaluation.metrics.mmd as mmd
-from core.utils import get_n_jobs
+from core.utils import get_n_jobs, nx_to_mol
 
 from joblib import Parallel, delayed
 
@@ -412,3 +412,9 @@ def uniqueness(gen_graphs, temp_path, timeout):
         print(e)
 
     return uniqueness_score, unique_idxs
+
+
+def validity(gen_graphs):
+    mols = [nx_to_mol(G) for G in gen_graphs]
+    valid = len([m for m in mols if m])
+    return valid / len(gen_graphs)
