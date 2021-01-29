@@ -42,9 +42,9 @@ class Evaluator(BaseModule):
         self.num_samples = 256 if dataset_name != "ENZYMES" else 40
         self.num_runs = 10 if dataset_name != "ENZYMES" else 64
 
-    def evaluate(self, best):
-        best = "best" if best else "last"
-        gen_graphs = load_pickle(self.dirs.samples / f"samples_{best}.pkl")
+    def evaluate(self, epoch):
+        fname = f"{epoch}" if epoch else "last"
+        gen_graphs = load_pickle(self.dirs.samples / f"samples_{fname}.pkl")
 
         real_graphs = [self.graphs[i] for i in self.indices['test']]
         random.shuffle(real_graphs)
@@ -125,7 +125,7 @@ class Evaluator(BaseModule):
             "MMD Node labels and degrees": node_label_and_degree
         }
 
-        filename = self.dirs.eval / f"results_{best}.pkl"
+        filename = self.dirs.eval / f"results_{fname}.pkl"
         save_pickle(results, filename)
 
     def _setup_dirs(self, root_dir):

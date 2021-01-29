@@ -15,12 +15,13 @@ class Generator(BaseModule):
         self.max_edges = self.dataset.mapper['max_edges']
         self.min_edges = self.dataset.mapper['min_edges']
 
-    def generate(self, best, device):
-        ckpt_path = list(self.dirs.ckpt.glob("epoch*.ckpt"))[0] if best else self.dirs.ckpt / "last.ckpt"
+    def generate(self, epoch, device):
+        fname = f"epoch={epoch}.ckpt" if epoch else "last.ckpt"
+        ckpt_path = self.dirs.ckpt / fname
         wrapper = self.load_wrapper(ckpt_path)
         samples = self.get_samples(wrapper.model, device)
-        best = "best" if best else "last"
-        save_pickle(samples, self.dirs.samples / f"samples_{best}.pkl")
+        fname = f"{epoch}" if epoch else "last"
+        save_pickle(samples, self.dirs.samples / f"samples_{fname}.pkl")
 
     def get_samples(self, model, device):
         raise NotImplementedError
