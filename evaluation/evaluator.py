@@ -52,7 +52,7 @@ class Evaluator(BaseModule):
         train_graphs = [self.graphs[i] for i in self.indices['train']]
         tmp_dir = "."
 
-        validity_score, _ = stats.validity(gen_graphs)
+        validity_score = stats.validity(gen_graphs)
         novelty_score, _ = stats.novelty(train_graphs, gen_graphs, tmp_dir, timeout=60)
         uniqueness_score, _ = stats.uniqueness(gen_graphs, tmp_dir, timeout=120)
 

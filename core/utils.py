@@ -39,29 +39,29 @@ def flatten(list_of_lists):
 
 
 def nx_to_mol(G):
-    mol = Chem.RWMol()
-    pt = Chem.GetPeriodicTable()
-    atomic_symbols = nx.get_node_attributes(G, 'label')
-    node_to_idx = {}
-    for node in G.nodes():
-        sym = atomic_symbols[node]
-        atomic_num = pt.GetAtomicNumber(sym)
-        a = Chem.Atom(atomic_num)
-        idx = mol.AddAtom(a)
-        node_to_idx[node] = idx
-
-    bond_types = nx.get_edge_attributes(G, 'label')
-    for bt in bond_types.keys():
-        bond_types[bt] = BOND_TYPES[bond_types[bt]]
-
-    for edge in G.edges():
-        first, second = edge
-        ifirst = node_to_idx[first]
-        isecond = node_to_idx[second]
-        bond_type = bond_types[first, second]
-        mol.AddBond(ifirst, isecond, bond_type)
-
     try:
+        mol = Chem.RWMol()
+        pt = Chem.GetPeriodicTable()
+        atomic_symbols = nx.get_node_attributes(G, 'label')
+        node_to_idx = {}
+        for node in G.nodes():
+            sym = atomic_symbols[node]
+            atomic_num = pt.GetAtomicNumber(sym)
+            a = Chem.Atom(atomic_num)
+            idx = mol.AddAtom(a)
+            node_to_idx[node] = idx
+
+        bond_types = nx.get_edge_attributes(G, 'label')
+        for bt in bond_types.keys():
+            bond_types[bt] = BOND_TYPES[bond_types[bt]]
+
+        for edge in G.edges():
+            first, second = edge
+            ifirst = node_to_idx[first]
+            isecond = node_to_idx[second]
+            bond_type = bond_types[first, second]
+            mol.AddBond(ifirst, isecond, bond_type)
+
         Chem.SanitizeMol(mol)
         return mol
     except:
