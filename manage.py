@@ -37,7 +37,7 @@ def command_parser():
 
     sub_evaluate = sub.add_parser('evaluate', help="Evaluation.")
     sub_evaluate.add_argument("--exp-path", help="Experiment path.")
-    sub_generate.add_argument("--epoch", type=int, default=None, help="Checkpoint epoch.")
+    sub_evaluate.add_argument("--epoch", type=int, default=None, help="Checkpoint epoch.")
     sub_evaluate.set_defaults(command='evaluate')
 
     return parser
