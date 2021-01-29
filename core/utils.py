@@ -61,5 +61,8 @@ def nx_to_mol(G):
         bond_type = bond_types[first, second]
         mol.AddBond(ifirst, isecond, bond_type)
 
-    Chem.SanitizeMol(mol)
-    return mol
+    try:
+        Chem.SanitizeMol(mol)
+        return mol
+    except:
+        return None
