@@ -1,3 +1,4 @@
+import torch
 import os
 from pathlib import Path
 import time
@@ -66,3 +67,11 @@ def nx_to_mol(G):
         return mol
     except:
         return None
+
+
+def count_params(ckpt_path):
+    state_dict = torch.load(ckpt_path)['state_dict']
+    num_params = sum(state_dict[p].numel() for p in state_dict)
+    logs_dir = ckpt_path.parent.parent / "logs"
+    with open(logs_dir / "num_params.txt", "w") as f:
+        print(num_params, file=f)

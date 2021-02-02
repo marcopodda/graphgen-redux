@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from core.settings import DATASETS
+from core.utils import count_params
 from datasets.create_dataset import create_dataset
 from datasets.preprocess_dataset import preprocess_dataset
 from evaluation.evaluator import Evaluator
@@ -40,6 +41,10 @@ def command_parser():
     sub_evaluate.add_argument("--epoch", type=int, default=None, help="Checkpoint epoch.")
     sub_evaluate.set_defaults(command='evaluate')
 
+    sub_count = sub.add_parser('count', help="Count number of parameters.")
+    sub_count.add_argument("--checkpoint", help="Checkpoint name.")
+    sub_count.set_defaults(command='count')
+
     return parser
 
 
@@ -69,3 +74,7 @@ if __name__ == "__main__":
     elif args.command == "evaluate":
         evaluator = Evaluator.initialize(Path(args.exp_path))
         evaluator.evaluate(epoch=args.epoch)
+
+    elif args.command == "count":
+        ckpt_path = Path(args.checkpoint)
+        count_params(ckpt_path)
