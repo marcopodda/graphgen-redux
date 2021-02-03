@@ -1,3 +1,4 @@
+from statistics import mean
 from pathlib import Path
 from core.serialization import load_pickle
 
@@ -36,6 +37,6 @@ def load_results_on_dataset(dataset_name, last=False):
         results_path = sorted(eval_dir.glob("*.pkl"))[idx]
         results = load_pickle(results_path)
         for key in results:
-            dataset_results[key].append(results[key])
+            dataset_results[key].append(mean(results[key]))
 
     return dataset_results
