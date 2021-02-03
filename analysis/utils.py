@@ -37,6 +37,10 @@ def load_results_on_dataset(dataset_name, last=False):
         results_path = sorted(eval_dir.glob("*.pkl"))[idx]
         results = load_pickle(results_path)
         for key in results:
-            dataset_results[key].append(mean(results[key]))
+            try:
+                res = mean(results[key])
+            except TypeError:
+                res = results[key]
+            dataset_results[key].append(res)
 
     return dataset_results
