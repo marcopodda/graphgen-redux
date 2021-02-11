@@ -14,12 +14,8 @@ conda install scikit-learn pandas joblib networkx pyyaml seaborn ipython jupyter
 # install pytorch
 conda install pytorch==${TORCH_VERSION} -c pytorch -y
 
-# install pytorch-geometr:ic
-pip install --no-index torch-scatter -f https://pytorch-geometric.com/whl/torch-${TORCH_VERSION}+${CUDA_VERSION}.html
-pip install --no-index torch-sparse -f https://pytorch-geometric.com/whl/torch-${TORCH_VERSION}+${CUDA_VERSION}.html
-pip install --no-index torch-cluster -f https://pytorch-geometric.com/whl/torch-${TORCH_VERSION}+${CUDA_VERSION}.html
-pip install --no-index torch-spline-conv -f https://pytorch-geometric.com/whl/torch-${TORCH_VERSION}+${CUDA_VERSION}.html
-pip install torch-geometric
+# install rdkit
+conda install rdkit -c rdkit -y
 
 # additional pip packages
 pip install pyemd dgl-${CUDA_VERSION}
