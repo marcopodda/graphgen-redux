@@ -18,7 +18,7 @@ conda install pytorch==${TORCH_VERSION} -c pytorch -y
 conda install rdkit -c rdkit -y
 
 # additional pip packages
-pip install pyemd dgl-${CUDA_VERSION}
+pip install pyemd
 pip install pytorch-lightning
 
 # instal EdEN (for NSPKD)
